@@ -68,7 +68,7 @@ async def run_async_migrations() -> None:
     )
 
     async with connectable.connect() as connection:
-        connection.run_sync(run_migrations)
+        await connection.run_sync(run_migrations)
     await connectable.dispose()
 
 def run_migrations_online() -> None:
@@ -78,7 +78,7 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    asyncio.run(run_async_migrations)
+    asyncio.run(run_async_migrations())
     
 
 

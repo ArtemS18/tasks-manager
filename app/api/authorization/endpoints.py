@@ -1,16 +1,46 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, Form, Response
 
-from app.api.depencies import login_service
-from app.api.authorization.schemas import TokenResponseSchema, AuthorizationRequestSchema
-from app.service.authentication.login import LoginService
-from app.service.cookies.utils import set_cookie
+from app.api.depencies import login_service, validation_refresh_token
+from app.api.authorization.schemas import OKResponseSchema, AuthorizationRequestSchema, RegisterUserSchema, UserSchemaResponse
+from app.entity.user import User
+from app.service.auth.login import LoginService
+from app.service.utils import set_cookie
 
-router = APIRouter(prefix="/login", tags=["Autorization"])
+router = APIRouter(prefix="/auth", tags=["Autorization"])
 
-@router.post("/", response_model=TokenResponseSchema)
-async def login_user(response: Response, service:Annotated[LoginService, Depends(login_service)], form_data:Annotated[AuthorizationRequestSchema, Form()]):
+@router.post("/", response_model=OKResponseSchema)
+async def login_user(
+    response: Response,
+    service:Annotated[LoginService, Depends(login_service)], 
+    form_data:Annotated[AuthorizationRequestSchema, Form()]
+):
     user = await service.authentication(form_data)
+    access_token = await service.create_access_token(user)
+    refresh_token = await service.create_refresh_token(user)
+
+    set_cookie(response, key="access_token", value=access_token)
+    set_cookie(response, key="refresh_token", value=refresh_token)
+
+    return OKResponseSchema(message="Success authotizeted user")
+
+@router.post("/reg", response_model=OKResponseSchema)
+async def reg_user(
+    response: Response, 
+    service:Annotated[LoginService, Depends(login_service)], 
+    form_data:RegisterUserSchema
+):
+    user = await service.register_user(form_data)
+    
+    user_response = UserSchemaResponse.model_validate(user)
+    return OKResponseSchema(message="Success registered user", details=user_response.model_dump())
+
+@router.get("/refresh", response_model=OKResponseSchema)
+async def get_refresh_token(
+    response: Response, 
+    user: Annotated[User, Depends(validation_refresh_token)],
+    service: Annotated[LoginService, Depends(login_service)]
+):
     token = await service.create_access_token(user)
     set_cookie(response, key="access_token", value=token)
-    return TokenResponseSchema(access_token=token, token_type="Bearer").model_dump()
+    return OKResponseSchema(message="Success created new access token")

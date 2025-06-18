@@ -1,10 +1,19 @@
-from pydantic import BaseModel, EmailStr, Field
+from typing import Any
+from pydantic import EmailStr, Field, BaseModel
 
 class AuthorizationRequestSchema(BaseModel):
-    email: EmailStr
+    login: str
     password: str = Field(max_length=63, min_length=8)
 
+class OKResponseSchema(BaseModel):
+    message: str
+    details: Any | None = None
 
-class TokenResponseSchema(BaseModel):
-    access_token: str
-    token_type: str
+class UserSchemaResponse(BaseModel):
+    tg_id: int
+    name: str
+    login: str
+
+class RegisterUserSchema(AuthorizationRequestSchema):
+    tg_id: int
+    name: str

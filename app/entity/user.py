@@ -1,12 +1,9 @@
+from app.entity.base import Base
 
-from pydantic import BaseModel
 
-
-class User(BaseModel):
+class User(Base):
     id: int
     tg_id: int
     name: str
     login: str
     hashed_password: str
-    class Config:
-        from_attributes = True

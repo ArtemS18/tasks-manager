@@ -9,8 +9,8 @@ async def session_with_commit(commit=True) :
     try:
         yield session
         if commit:
-            session.commit()
+            await session.commit()
 
     except Exception as e:
-        session.rollback()
+        await session.rollback()
         raise e

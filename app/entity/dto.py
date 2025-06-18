@@ -1,9 +1,14 @@
-from pydantic import BaseModel
+from app.entity.base import Base
 
-class CreateUserDTO(BaseModel):
+class CreateUserDTO(Base):
     tg_id: int
     name: str
     login: str
-    hashed_password: str
-    class Config:
-        from_attributes = True
+    password: str
+
+class CreateTaskDTO(Base):
+    text: str
+    status: str
+    author_id: int
+    assigned_id: int | None = None
+

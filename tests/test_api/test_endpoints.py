@@ -2,7 +2,7 @@ from fastapi import FastAPI
 import pytest
 from httpx import AsyncClient
 from unittest.mock import AsyncMock
-from app.api.tasks.depencies import task_service
+from app.api.depencies import task_service
 from app.entity.task import Tasks, Task
 
 @pytest.mark.asyncio

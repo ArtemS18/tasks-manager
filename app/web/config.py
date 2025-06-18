@@ -16,6 +16,7 @@ class BaseConfig(BaseSettings):
 
     JWT_EXPIRE_MINUTES: int
     JWT_SECRET_KEY: str
+    JWT_REFRESH_EXPIRE_HOURS: int
     JWT_ALGORIM: str
     class Config:
         env_file = "env\.env"
@@ -32,4 +33,8 @@ def get_config()->BaseConfig:
     if _config is None:
         raise RuntimeError("Config is not initialized")
     return _config
+
+config = BaseConfig()
+
+    
 
