@@ -4,6 +4,7 @@ from fastapi import Cookie, HTTPException, status, Depends
 
 from app.bd.session import get_session
 from app.bd.repository.user import UserRepository
+from app.email.send_email import SmtpClient
 from app.service.auth.login import LoginService
 
 from app.service.auth.jwt import JwtService
@@ -24,6 +25,9 @@ def login_service(session = Depends(get_session), auth=Depends(jwt_service)):
 
 def user_service(session = Depends(get_session)):
     return UserService(UserRepository(session))
+
+def smtp_client(session = Depends(get_session)):
+    return SmtpClient(UserRepository(session))
 
 async def validation_access_token(access_token: Annotated[ str | None, Cookie()], service:Annotated[LoginService, Depends(login_service)]):
     if access_token is None:

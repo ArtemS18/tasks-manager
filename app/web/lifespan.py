@@ -6,9 +6,12 @@ from app.bd.connection import (
 )
 
 from fastapi import FastAPI
+ 
+from app.email.connect import connect as email_connect
 
 @asynccontextmanager
 async def lifespan(app: "FastAPI"):
     pg_connect()
+    email_connect()
     yield
-    pg_disconnect()
+    await pg_disconnect()

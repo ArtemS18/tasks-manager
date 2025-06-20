@@ -24,6 +24,15 @@ async def get_tasks(
     tasks = await service.get_tasks(filter_query)
     return json_response(TasksSchema, tasks)
 
+@router.post('/', response_model=TaskSchema)
+async def create_task(
+    new_task: CreateTaskSchema, 
+    service: Annotated["TaskService", Depends(task_service)]
+    ):
+    task = await service.create_task(CreateTaskDTO.model_validate(new_task))
+    return json_response(TaskSchema, task)
+
+
 @router.get('/{task_id}', response_model=TaskSchema)
 async def get_tasks(
     task_id:int, 
@@ -41,13 +50,6 @@ async def get_comment_from_task(
     comments = await service.get_comments_from_task(task_id, filter_query)
     return json_response(CommentsSchema, comments)
 
-@router.post('/', response_model=TaskSchema)
-async def create_task(
-    new_task: CreateTaskSchema, 
-    service: Annotated["TaskService", Depends(task_service)]
-    ):
-    task = await service.create_task(CreateTaskDTO.model_validate(new_task))
-    return json_response(TaskSchema, task)
 
 
 

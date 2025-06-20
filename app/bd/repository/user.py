@@ -21,7 +21,13 @@ class UserRepository:
         async with self.session() as session:
             tasks = await session.execute(query)
             return tasks.scalar_one_or_none()
-    
+        
+    async def get_user_by_id(self, user_id:int):
+        query = select(User).where(User.id==user_id)
+        async with self.session() as session:
+            tasks = await session.execute(query)
+            return tasks.scalar_one_or_none()
+        
     async def create_user(self, new_user:CreateUserDTO):
         try:
             query = insert(User).values(
@@ -48,4 +54,6 @@ class UserRepository:
         async with self.session() as session:
             token = await session.execute(query)
             return token.scalar_one_or_none()
+        
+    
 

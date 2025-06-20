@@ -13,6 +13,8 @@ class UserSchemaResponse(BaseModel):
     tg_id: int
     name: str
     login: str
+    class Config:
+        from_attributes = True
 
 class RegisterUserSchema(AuthorizationRequestSchema):
     tg_id: int

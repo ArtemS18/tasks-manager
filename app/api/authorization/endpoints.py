@@ -1,8 +1,9 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, Form, Response
+from fastapi import APIRouter, Depends, Form, Response, BackgroundTasks
 
-from app.api.depencies import login_service, validation_refresh_token
+from app.api.depencies import login_service, smtp_client, validation_refresh_token
 from app.api.authorization.schemas import OKResponseSchema, AuthorizationRequestSchema, RegisterUserSchema, UserSchemaResponse
+from app.email.send_email import SmtpClient
 from app.entity.user import User
 from app.service.auth.login import LoginService
 from app.service.utils import set_cookie
@@ -26,12 +27,14 @@ async def login_user(
 
 @router.post("/reg", response_model=OKResponseSchema)
 async def reg_user(
-    response: Response, 
     service:Annotated[LoginService, Depends(login_service)], 
-    form_data:RegisterUserSchema
+    form_data:RegisterUserSchema,
+    smtp_client: Annotated[SmtpClient, Depends(smtp_client)],
+    background_tasks: BackgroundTasks
 ):
     user = await service.register_user(form_data)
-    
+
+    background_tasks.add_task(smtp_client.send_email, user_id=user.id)
     user_response = UserSchemaResponse.model_validate(user)
     return OKResponseSchema(message="Success registered user", details=user_response.model_dump())
 

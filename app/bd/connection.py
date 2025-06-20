@@ -42,7 +42,7 @@ def get_session() -> async_sessionmaker[AsyncSession]:
 async def disconnect():
     global _engine, _session
     if _engine:
-        _engine.dispose()
+        await _engine.dispose()
         _engine = None
         logger.info("Disconnect to pgsql database")
     if _session:

@@ -18,6 +18,10 @@ class BaseConfig(BaseSettings):
     JWT_SECRET_KEY: str
     JWT_REFRESH_EXPIRE_HOURS: int
     JWT_ALGORIM: str
+
+    EMAIL_HOST:str
+    EMAIL_PORT:str
+    
     class Config:
         env_file = "env\.env"
 
