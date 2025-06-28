@@ -5,8 +5,8 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from sqlalchemy import Connection, pool
 
 from alembic import context
-from app.bd.base.base_model import Base
-from app.bd import models
+from app.base.base_model import Base
+from app.store.bd import models
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -66,7 +66,7 @@ async def run_async_migrations() -> None:
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
-
+    
     async with connectable.connect() as connection:
         await connection.run_sync(run_migrations)
     await connectable.dispose()

@@ -1,33 +1,25 @@
 from typing import Annotated
+import typing
 
 from fastapi import Cookie, HTTPException, status, Depends
 
-from app.bd.session import get_session
-from app.bd.repository.user import UserRepository
-from app.email.send_email import SmtpClient
 from app.service.auth.login import LoginService
-
 from app.service.auth.jwt import JwtService
 from app.service.task import TaskService
-from app.bd.repository.tasks import TaskRepository
 from app.service.user import UserService
-from app.web.config import get_config
+from app.lib.fastapi import Request
 
-def task_service(session = Depends(get_session)):
-    return TaskService(TaskRepository(session))
+def task_service(req: Request):
+    return TaskService(req.app.store.task)
 
-def jwt_service():
-    config = get_config()
-    return JwtService(config)
+def jwt_service(req: Request) -> JwtService:
+    return JwtService(req.app.config)
 
-def login_service(session = Depends(get_session), auth=Depends(jwt_service)):
-    return LoginService(UserRepository(session), auth)
+def login_service(req: Request, auth=Depends(jwt_service)):
+    return LoginService(repository=req.app.store.user, jwt=auth)
 
-def user_service(session = Depends(get_session)):
-    return UserService(UserRepository(session))
-
-def smtp_client(session = Depends(get_session)):
-    return SmtpClient(UserRepository(session))
+def user_service(req: Request):
+    return UserService(req.app.store.user)
 
 async def validation_access_token(access_token: Annotated[ str | None, Cookie()], service:Annotated[LoginService, Depends(login_service)]):
     if access_token is None:

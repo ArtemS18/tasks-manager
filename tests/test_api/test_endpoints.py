@@ -1,12 +1,14 @@
-from fastapi import FastAPI
+import asyncio
+from app.lib.fastapi import FastAPI
 import pytest
-from httpx import AsyncClient
+from httpx import AsyncClient, Cookies
 from unittest.mock import AsyncMock
-from app.api.depencies import task_service
-from app.entity.task import Tasks, Task
 
 @pytest.mark.asyncio
-async def test_get_tasks(async_client: AsyncClient, test_app: FastAPI):
+async def test_get_tasks(client: AsyncClient, test_app: FastAPI, auth_client: Cookies):
+    from app.api.depencies import task_service
+    from app.entity.task import Tasks, Task
+
     fake_data = {
         "tasks": [
             {
@@ -24,7 +26,10 @@ async def test_get_tasks(async_client: AsyncClient, test_app: FastAPI):
 
     test_app.dependency_overrides[task_service] = lambda: fake_task_service
 
-    response = await async_client.get("/tasks/")
+    response = await client.get(
+        "/tasks/",
+        cookies=auth_client
+    )
 
     assert response.status_code == 200
     assert response.json() == fake_data

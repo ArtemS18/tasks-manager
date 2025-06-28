@@ -1,13 +1,12 @@
 from datetime import datetime, timezone
 import logging
 from fastapi import HTTPException, status
-from app.bd.models.users_models import RefreshToken
-from app.bd.repository.user import UserRepository
+from app.store.bd.models.users_models import RefreshToken
+from app.store.bd.repository.user import UserRepository
 from app.entity.dto import CreateUserDTO
 from app.entity.user import User
 from app.service.auth.jwt import JwtService
 from app.service.auth.password import verify_password, hash_password
-from app.web.config import get_config
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +14,6 @@ class LoginService:
     def __init__(self, repository, jwt):
         self.repository: UserRepository = repository
         self.jwt: JwtService = jwt
-        self._config = get_config()
         self.unauthorized_exec = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not valid email or password", 

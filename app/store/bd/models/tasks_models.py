@@ -1,7 +1,7 @@
 from  sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import VARCHAR, Integer, ForeignKey, Text
 
-from app.bd.base.base_model import Base
+from app.base.base_model import Base
 
 class Task(Base):
     __tablename__ = "tasks"

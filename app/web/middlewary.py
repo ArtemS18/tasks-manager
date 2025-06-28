@@ -1,9 +1,13 @@
 import logging
-from fastapi import FastAPI, Request, Response
+import typing
+from fastapi import Response
+
+if typing.TYPE_CHECKING:
+    from app.lib.fastapi import FastAPI, Request
 
 logger = logging.getLogger(__name__)
 
-async def exeption_middlewary(request: Request, call_next):
+async def exeption_middlewary(request: "Request", call_next):
     try:
         response: Response = await call_next(request)
         return response

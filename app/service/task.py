@@ -1,7 +1,7 @@
 from app.api.tasks.schemas import CommentsFilters, TaskFilters
 from app.entity.dto import CreateTaskDTO
 from app.entity.task import Comment, Comments, Task, Tasks
-from app.bd.repository.tasks import TaskRepository
+from app.store.bd.repository.tasks import TaskRepository
 
 class TaskService:
     def __init__(self, repository):

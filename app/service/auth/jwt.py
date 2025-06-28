@@ -1,6 +1,5 @@
-from typing import Dict
-from fastapi import HTTPException, status
 import jwt
+from typing import Dict
 from datetime import datetime, timezone, timedelta
 
 from app.entity.token import RefreshTokenDTO
@@ -8,7 +7,7 @@ from app.web.config import BaseConfig
 from app.web.exception import UNAUTHORIZE
 
 class JwtService:
-    def __init__(self, config):
+    def __init__(self, config: BaseConfig):
         self._config: BaseConfig = config
 
     def create_access_token(

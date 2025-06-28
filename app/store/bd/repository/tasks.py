@@ -1,16 +1,12 @@
 from sqlalchemy import insert, select
 from app.api.tasks.schemas import CommentsFilters, TaskFilters
-from app.bd.session import get_session, session_with_commit
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from app.bd.models.tasks_models import Task, Comment
+from app.store.bd.models.tasks_models import Task, Comment
 from app.entity.dto import CreateTaskDTO
 from app.entity.user import User
+from app.store.bd.accessor import PgAccessor
 
-class TaskRepository:
-    def __init__(self, session):
-        self.session: async_sessionmaker[AsyncSession] = session
-
+class TaskRepository(PgAccessor):
     async def get_tasks(self, filters: TaskFilters):
         query = select(Task)
         if filters.assigned_id is not None:
@@ -59,8 +55,9 @@ class TaskRepository:
             author_id=create_task.author_id,
             assigned_id=create_task.assigned_id
         ).returning(Task)
-        async with session_with_commit() as session:
+        async with self.session() as session:
             task = await session.execute(query)
+            await session.commit()
             return task.scalar_one_or_none()
         
 

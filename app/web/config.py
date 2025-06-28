@@ -1,8 +1,10 @@
 from os import environ
+import typing
+if typing.TYPE_CHECKING:
+    from app.lib.fastapi import FastAPI
+
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
-
-_config: BaseSettings| None = None
 
 class BaseConfig(BaseSettings):
     ENV_TYPE: str
@@ -21,24 +23,28 @@ class BaseConfig(BaseSettings):
 
     EMAIL_HOST:str
     EMAIL_PORT:str
+
+    AIOPIKA_URL: str
     
     class Config:
         env_file = "env\.env"
 
-def setup_config(env_path: str):
-    global _config
-    if _config is None:
+
+config: BaseConfig | None = None
+
+def setup_config(path: str = "env\.env") -> BaseConfig:
+    global config
+    if config is None:
         load_dotenv()
-        _config = BaseConfig(_env_file=env_path)
-    return _config
+        config = BaseConfig(_env_file=path)
+    return config
 
+def get_config(app: "FastAPI"):
+    if config is None:
+        setup_config()
+    app.config = config
 
-def get_config()->BaseConfig:
-    if _config is None:
-        raise RuntimeError("Config is not initialized")
-    return _config
-
-config = BaseConfig()
-
-    
-
+def get_current_config() -> BaseConfig:
+    if config is None:
+        raise RuntimeError("config not created")
+    return config

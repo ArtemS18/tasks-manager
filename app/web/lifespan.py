@@ -1,17 +1,26 @@
 from contextlib import asynccontextmanager
+import typing
 
-from app.bd.connection import (
-    connect as pg_connect, 
-    disconnect as pg_disconnect
+from app.store.broker.connect import (
+    connect as pica_connect, 
+    disconnect as pica_disconnect
 )
+from app.store.broker.email.connect import (
+    connect as smtp_connect, 
+    disconnect as smtp_disconnect
+)
+if typing.TYPE_CHECKING:
+    from app.web.app import FastAPI
 
-from fastapi import FastAPI
- 
-from app.email.connect import connect as email_connect
 
 @asynccontextmanager
 async def lifespan(app: "FastAPI"):
-    pg_connect()
-    email_connect()
+    await app.store.user.connect()
+    await app.store.task.connect()
+    await smtp_connect()
+    await pica_connect()
     yield
-    await pg_disconnect()
+    await pica_disconnect()
+    await smtp_disconnect()
+    await app.store.user.disconnect()
+    await app.store.task.disconnect()
