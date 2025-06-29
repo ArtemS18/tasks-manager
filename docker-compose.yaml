@@ -1,4 +1,34 @@
 services:
+  task_api:
+    build: task_api/
+    ports:
+    - "8081:8081"
+    environment:
+      - ENV_TYPE=dev
+    volumes:
+      - ./task_api:/app
+    command: >
+      sh -c "python main.py"
+    depends_on:
+      - postgres
+      - rabbitmq
+      - redis
+
+  worker:
+    build: task_api/
+    ports:
+    - "8082:8081"
+    environment:
+      - ENV_TYPE=dev
+    depends_on:
+      - postgres
+      - rabbitmq
+      - redis
+    volumes:
+      - ./task_api:/app
+    command: >
+      sh -c "taskiq worker app.broker.connect:broker --fs-discover"
+
   postgres:
     image: postgres:15-alpine
     environment:
