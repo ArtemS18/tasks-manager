@@ -15,6 +15,7 @@ if typing.TYPE_CHECKING:
 
 @asynccontextmanager
 async def lifespan(app: "FastAPI"):
+    await app.store.redis.connect()
     await app.store.user.connect()
     await app.store.task.connect()
     await smtp_connect()
@@ -24,3 +25,4 @@ async def lifespan(app: "FastAPI"):
     await smtp_disconnect()
     await app.store.user.disconnect()
     await app.store.task.disconnect()
+    await app.store.redis.disconnect()

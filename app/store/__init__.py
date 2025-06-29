@@ -1,8 +1,10 @@
 import typing
 
+from app.store.redis.accessor import RedisAccessor
+
 #from taskiq_aio_pika import AioPikaBroker
 if typing.TYPE_CHECKING:
-    from app.web.app import FastAPI
+    from app.lib.fastapi import FastAPI
 
 class Store:
     def __init__(self, app: "FastAPI"):
@@ -12,6 +14,7 @@ class Store:
 
         self.user = UserRepository(app)
         self.task = TaskRepository(app)
+        self.redis = RedisAccessor(app)
         #self.broker = AioPikaBroker(app.config.AIOPIKA_URL)
 
         

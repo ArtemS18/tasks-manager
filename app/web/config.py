@@ -25,6 +25,12 @@ class BaseConfig(BaseSettings):
     EMAIL_PORT:str
 
     AIOPIKA_URL: str
+
+    REDIS_URL: str
+    REDIS_USERNAME: str
+    REDIS_PASSWORD: str
+
+    CONFIRM_PASSWORD_EXPIRE_MINUTES: int
     
     class Config:
         env_file = "env\.env"
