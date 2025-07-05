@@ -12,8 +12,8 @@ def session_manager(engin: AsyncEngine):
 
 @pytest.fixture(scope="session")
 def sync_engine(config: BaseConfig):
-    sync_url = config.DATABASE_URL.replace("+asyncpg", "")
-    engine = create_engine(sync_url, echo=config.ECHO, poolclass=NullPool)
+    sync_url = config.db.url.replace("+asyncpg", "")
+    engine = create_engine(sync_url, echo=config.db.echo, poolclass=NullPool)
     yield engine
     engine.dispose()
 
@@ -50,7 +50,7 @@ def setup_schema(sync_engine: Engine):
         
 @pytest_asyncio.fixture(scope="session")
 async def engine(config: BaseConfig, setup_schema):
-    engine = create_async_engine(config.DATABASE_URL, echo=config.ECHO)
+    engine = create_async_engine(config.db.url, echo=config.db.echo)
     yield engine
     await engine.dispose()
 

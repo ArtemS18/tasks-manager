@@ -33,7 +33,7 @@ def create_url()-> str:
     base_dir = Path(__file__).parent.parent / "env"
     env_path = base_dir / ".local.env"
     print(env_path)
-    url = setup_config(path=str(env_path), base_dir=str(base_dir)).DATABASE_URL
+    url = setup_config(path=str(env_path), base_dir=str(base_dir)).db.url
     print(url)
     return url
 

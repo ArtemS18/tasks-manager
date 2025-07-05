@@ -1,5 +1,4 @@
 from typing import Annotated
-import typing
 
 from fastapi import Cookie, HTTPException, status, Depends
 

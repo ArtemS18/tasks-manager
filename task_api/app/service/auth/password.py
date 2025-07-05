@@ -1,5 +1,11 @@
 import bcrypt
 from random import choice
+import asyncio
+
+async def hash_password_async(password: str) -> str:
+    salt = bcrypt.gensalt(rounds=10)
+    hashed = await asyncio.to_thread(bcrypt.hashpw, password.encode("utf-8"), salt)
+    return hashed.decode("utf-8")
 
 def hash_password(password: str):
     byte_password = password.encode()
@@ -17,9 +23,7 @@ def verify_password(password:str, hash_password: str):
 def create_confirm_password(leght: int=6, letters=True):
     digits = '0123456789'
     uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-
     password = ''
-
     chars = digits[:]
     if letters:
         chars+=uppercase

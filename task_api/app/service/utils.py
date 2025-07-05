@@ -1,5 +1,8 @@
+import functools
+import logging
+from time import perf_counter
+from typing import Callable
 from fastapi import Response
-
 
 def set_cookie(
         response:Response,
@@ -21,3 +24,4 @@ def set_cookie(
         path=path
     )
     return response
+

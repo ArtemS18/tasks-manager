@@ -2,7 +2,7 @@ services:
   task_api:
     build: task_api/
     ports:
-    - "8081:8081"
+    - "8080:8081"
     environment:
       - ENV_TYPE=dev
     volumes:
@@ -14,10 +14,10 @@ services:
       - rabbitmq
       - redis
 
-  worker:
+  aio-worker:
     build: task_api/
     ports:
-    - "8082:8081"
+    - "8081:8081"
     environment:
       - ENV_TYPE=dev
     depends_on:
@@ -28,6 +28,17 @@ services:
       - ./task_api:/app
     command: >
       sh -c "taskiq worker app.broker.connect:broker --fs-discover"
+
+  db-worker:
+    build: db_worker/
+    environment:
+      - ENV_TYPE=dev
+    depends_on:
+      - postgres
+    volumes:
+      - ./db_worker:/app
+    command: >
+      sh -c "python main.py"
 
   postgres:
     image: postgres:15-alpine
@@ -85,5 +96,25 @@ services:
       REDIS_PASSWORD: admin
     command: ["redis-server", "--requirepass", "admin"]
 
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml
+      - prometheusdata:/prometheus
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - grafana-storage:/var/lib/grafana
+
 volumes:
   my_postgres_data:
+  grafana-storage:
+  prometheusdata:

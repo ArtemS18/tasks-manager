@@ -1,6 +1,5 @@
 from redis.asyncio import Redis
 
-from app.entity.user import User
 from app.lib.fastapi import FastAPI
 
 class RedisAccessor:
@@ -10,8 +9,8 @@ class RedisAccessor:
 
     async def connect(self):
         self.redis = Redis.from_url(
-            url=self.app.config.REDIS_URL,
-            password=self.app.config.REDIS_PASSWORD,
+            url=self.app.config.redis.url,
+            password=self.app.config.redis.password,
             decode_responses=True,
         )
 
@@ -21,7 +20,7 @@ class RedisAccessor:
 
     async def create_confirming_password(self, user_id: int, password: str, expire_seconds: int = None):
         if expire_seconds is None:
-            expire_seconds=self.app.config.CONFIRM_PASSWORD_EXPIRE_MINUTES*60
+            expire_seconds=self.app.config.jwt.confirm_expire*60
         await self.redis.set(user_id, password,  ex=expire_seconds)
 
     async def get_confirming_password(self, user_id: int):

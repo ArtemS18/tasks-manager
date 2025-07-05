@@ -1,5 +1,6 @@
+import logging
 from typing import Annotated
-from fastapi import APIRouter, Body, Depends, Form, Response, BackgroundTasks
+from fastapi import APIRouter, Body, Depends, Form, Response
 
 from app.api.depencies import login_service, validation_confirm_token, validation_refresh_token
 from app.api.authorization.schemas import ConfirmEmailSchema, OKResponseSchema, AuthorizationRequestSchema, RegisterUserSchema, UserSchemaResponse
@@ -7,6 +8,8 @@ from app.entity.user import User
 from app.service.auth.login import LoginService
 from app.service.utils import set_cookie
 from app.broker.tasks import send_autho_email_task
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["Autorization"])
 
@@ -36,7 +39,7 @@ async def reg_user(
     await service.create_confirming_password(user)
     await send_autho_email_task.kiq(user.id)
 
-    confirm_token = await service.create_access_token(user, for_confirm=True)
+    confirm_token = await service.create_confirm_token(user)
     set_cookie(response, key="confirm_token", value=confirm_token)
 
     user_response = UserSchemaResponse.model_validate(user)

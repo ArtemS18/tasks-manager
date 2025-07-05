@@ -2,7 +2,7 @@ from typing import Any
 from pydantic import EmailStr, Field, BaseModel
 
 class AuthorizationRequestSchema(BaseModel):
-    login: str
+    login: EmailStr
     password: str = Field(max_length=63, min_length=8)
 
 class OKResponseSchema(BaseModel):
@@ -12,7 +12,7 @@ class OKResponseSchema(BaseModel):
 class UserSchemaResponse(BaseModel):
     tg_id: int
     name: str
-    login: str
+    login: EmailStr
     class Config:
         from_attributes = True
 

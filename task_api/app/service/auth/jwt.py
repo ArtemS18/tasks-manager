@@ -23,17 +23,16 @@ class JwtService:
         encode = payload.copy()
         if expire_at is None:
             encode.update(
-                {"exp": now + timedelta(minutes=expire) if expire else now + timedelta(minutes=self._config.JWT_EXPIRE_MINUTES)}
+                {"exp": now + timedelta(minutes=expire) if expire else now + timedelta(minutes=self._config.jwt.access_expire)}
             )
-            print(encode)
         else:
             encode.update(
                 {"exp": expire_at}
             )
         access_token = jwt.encode(
             encode,
-            self._config.JWT_SECRET_KEY,
-            self._config.JWT_ALGORIM
+            self._config.jwt.secret_key,
+            self._config.jwt.algorithm
         )
         return access_token
 
@@ -45,8 +44,8 @@ class JwtService:
         try:
             payload = jwt.decode(
                 token, 
-                self._config.JWT_SECRET_KEY, 
-                self._config.JWT_ALGORIM
+                self._config.jwt.secret_key, 
+                self._config.jwt.algorithm
         )
         except jwt.PyJWTError:
             unautorized_exc.detail = "Expire time out"
@@ -59,8 +58,11 @@ class JwtService:
     
     def create_refresh_token(self, payload: Dict, expire: int|None= None):
         now = datetime.now(timezone.utc)
-        expire_time = expire if expire else self._config.JWT_REFRESH_EXPIRE_HOURS
+        expire_time = expire if expire else self._config.jwt.refresh_expire
         expire_at = now+timedelta(expire_time)
 
         token = self.create_access_token(payload=payload, expire_at=expire_at)
         return RefreshTokenDTO(token=token, expire=expire_at)
+
+    def create_confirm_token(self, payload: Dict, expire: int|None= None):
+        return self.create_access_token(payload=payload, expire=self._config.jwt.confirm_expire)

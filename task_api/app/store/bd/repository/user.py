@@ -8,10 +8,12 @@ from app.store.bd.models import User, RefreshToken
 from app.entity.dto import CreateUserDTO
 from app.store.bd.accessor import PgAccessor
 from app.web.exception import INVALID_DATA
+from app.web.utils import async_time
 
 logger = logging.getLogger(__name__)
 
 class UserRepository(PgAccessor):
+    @async_time
     async def get_user(self, email: str):
         query = select(User).where(User.login==email)
         async with self.session() as session:
@@ -23,7 +25,7 @@ class UserRepository(PgAccessor):
         async with self.session() as session:
             tasks = await session.execute(query)
             return tasks.scalar_one_or_none()
-        
+    @async_time
     async def create_user(self, new_user:CreateUserDTO):
         try:
             query = insert(User).values(

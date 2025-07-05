@@ -1,7 +1,5 @@
-from httpx import AsyncClient, Cookies, Response
+from httpx import AsyncClient, Cookies
 import pytest_asyncio
-from asgi_lifespan import LifespanManager
-from app.lib.fastapi import FastAPI
 
 new_user = {
     "tg_id": 12121212,

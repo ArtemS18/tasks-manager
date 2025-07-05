@@ -4,7 +4,6 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     AsyncSession,
     create_async_engine,
-    async_sessionmaker
 )
 if typing.TYPE_CHECKING:
     from app.web.app import FastAPI
@@ -16,7 +15,7 @@ class PgAccessor:
         self.session: async_sessionmaker[AsyncSession]| None = None
 
     async def connect(self):
-        self.engine = create_async_engine(url=self.app.config.DATABASE_URL, echo = self.app.config.ECHO)
+        self.engine = create_async_engine(url=self.app.config.db.url, echo = self.app.config.db.echo)
         self.session = async_sessionmaker(self.engine, expire_on_commit=False)
 
     async def disconnect(self):
