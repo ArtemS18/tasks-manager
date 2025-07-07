@@ -1,10 +1,12 @@
 from redis.asyncio import Redis
 
+from app.base.accessor import BaseAccessor
 from app.lib.fastapi import FastAPI
 
-class RedisAccessor:
+
+class RedisAccessor(BaseAccessor):
     def __init__(self, app: "FastAPI"):
-        self.app = app
+        super().__init__(app)
         self.redis: Redis | None = None
 
     async def connect(self):
@@ -18,14 +20,13 @@ class RedisAccessor:
         if self.redis is not None:
             await self.redis.close()
 
-    async def create_confirming_password(self, user_id: int, password: str, expire_seconds: int = None):
+    async def create_confirming_password(
+        self, user_id: int, password: str, expire_seconds: int = None
+    ):
         if expire_seconds is None:
-            expire_seconds=self.app.config.jwt.confirm_expire*60
-        await self.redis.set(user_id, password,  ex=expire_seconds)
+            expire_seconds = self.app.config.jwt.confirm_expire * 60
+        await self.redis.set(user_id, password, ex=expire_seconds)
 
     async def get_confirming_password(self, user_id: int):
         password = await self.redis.get(user_id)
         return password
-
-
-

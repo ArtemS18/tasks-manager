@@ -1,27 +1,21 @@
-import asyncio
 import logging
-import sys
-from .connect import broker
+from typing import cast
+
+from app.broker import broker
+from fastapi import Request as FastAPIRequest
+from app.lib.fastapi import Request
+from taskiq import TaskiqDepends
+
 logger = logging.getLogger(__name__)
 
-@broker.task
-async def send_welcome_email_task(user_id: int):
-    from app.web.app import app
-    logger.info("task is running for %s", user_id)
-    await app.store.smtp.send_hello_email(user_id)
-    logger.info("task is finished for %s", user_id)
-
 
 @broker.task
-async def send_autho_email_task(user_id: int):
-    from app.web.app import app
-    logger.info("task is running for %s", user_id)
-    await app.store.smtp.send_autho_email(user_id)
-    logger.info("task is finished for %s", user_id)
+async def send_welcome_email_task(user_id: int, _req: FastAPIRequest = TaskiqDepends()):
+    req = cast(Request, _req)
+    await req.app.store.smtp.send_hello_email(user_id)
 
-async def setup_with_worker():
-    from app.web.app import app
-    await app.store.connect_all()
 
-if sys.argv[0].endswith("worker"):
-    asyncio.run(setup_with_worker())
+@broker.task
+async def send_autho_email_task(user_id: int, _req: FastAPIRequest = TaskiqDepends()):
+    req = cast(Request, _req)
+    await req.app.store.smtp.send_autho_email(user_id)

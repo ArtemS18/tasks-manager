@@ -1,7 +1,7 @@
 from email.message import EmailMessage
 
 
-def hello_template(from_email:str, to_email:str) -> EmailMessage:
+def hello_template(from_email: str, to_email: str) -> EmailMessage:
     message = EmailMessage()
     message["From"] = from_email
     message["To"] = to_email
@@ -9,7 +9,8 @@ def hello_template(from_email:str, to_email:str) -> EmailMessage:
     message.set_content("Sent via aiosmtplib")
     return message
 
-def autho_email_template(from_email:str, to_email:str, password: str) -> EmailMessage:
+
+def autho_email_template(from_email: str, to_email: str, password: str) -> EmailMessage:
     message = EmailMessage()
     message["From"] = from_email
     message["To"] = to_email

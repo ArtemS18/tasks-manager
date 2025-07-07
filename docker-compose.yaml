@@ -27,7 +27,7 @@ services:
     volumes:
       - ./task_api:/app
     command: >
-      sh -c "taskiq worker app.broker.connect:broker --fs-discover"
+      sh -c "scripts/worker.sh 4"
 
   db-worker:
     build: db_worker/

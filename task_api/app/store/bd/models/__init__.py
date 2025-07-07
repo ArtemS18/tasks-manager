@@ -1,10 +1,4 @@
-from .tasks_models import *
-from .users_models import *
+from .tasks_models import Task, Comment
+from .users_models import User, RefreshToken
 
-__all__ = [
-    Task,
-    User,
-    Comment,
-    RefreshToken
-]
-
+__all__ = [Task, User, Comment, RefreshToken]

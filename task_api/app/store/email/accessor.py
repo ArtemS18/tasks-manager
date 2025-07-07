@@ -1,11 +1,14 @@
 import logging
 import typing
 from aiosmtplib import SMTP
+
 from .template import autho_email_template, hello_template
 
 if typing.TYPE_CHECKING:
     from app.lib.fastapi import FastAPI
 logger = logging.getLogger(__name__)
+
+
 class SMTPAccessor:
     def __init__(self, app: "FastAPI"):
         self.app = app
@@ -14,9 +17,7 @@ class SMTPAccessor:
 
     async def get_connect(self) -> SMTP:
         client = SMTP(
-            hostname=self.config.host, 
-            port=self.config.port, 
-            start_tls=self.config.tls
+            hostname=self.config.host, port=self.config.port, start_tls=self.config.tls
         )
         await client.connect()
         if self.config.remote_connect:
@@ -29,10 +30,7 @@ class SMTPAccessor:
     async def send_hello_email(self, user_id: int):
         user = await self.app.store.user.get_user_by_id(user_id)
 
-        msg = hello_template(
-            from_email=self.root_email, 
-            to_email=user.login
-        )
+        msg = hello_template(from_email=self.root_email, to_email=user.login)
         client = await self.get_connect()
         async with client:
             await client.send_message(msg)
@@ -45,9 +43,7 @@ class SMTPAccessor:
             return
 
         msg = autho_email_template(
-            from_email=self.root_email, 
-            to_email=user.login,
-            password=password
+            from_email=self.root_email, to_email=user.login, password=password
         )
         client = await self.get_connect()
         async with client:

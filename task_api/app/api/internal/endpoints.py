@@ -2,7 +2,7 @@ from typing import Annotated
 import typing
 from fastapi import APIRouter, Query, Depends
 
-from app.api.depencies import validation_access_token, task_service
+from app.api.depencies import validation_internal_token, task_service
 from app.api.tasks.schemas import (
     CommentsFilters,
     CommentsSchema,
@@ -18,7 +18,10 @@ if typing.TYPE_CHECKING:
     from app.service.task import TaskService
 
 router = APIRouter(
-    prefix="/tasks", tags=["Tasks"], dependencies=[Depends(validation_access_token)]
+    prefix="/internal",
+    tags=["internal"],
+    include_in_schema=False,
+    dependencies=[Depends(validation_internal_token)],
 )
 
 

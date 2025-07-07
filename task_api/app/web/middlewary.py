@@ -1,11 +1,13 @@
 import logging
 import typing
 from fastapi import Response
+from prometheus_fastapi_instrumentator import Instrumentator
 
 if typing.TYPE_CHECKING:
     from app.lib.fastapi import FastAPI, Request
 
 logger = logging.getLogger(__name__)
+
 
 async def exeption_middlewary(request: "Request", call_next):
     try:
@@ -16,6 +18,5 @@ async def exeption_middlewary(request: "Request", call_next):
 
 
 def setup_middlewary(app: "FastAPI"):
-    pass
-    #app.middleware('http')(exeption_middlewary)
-    
+    Instrumentator().instrument(app).expose(app, include_in_schema=False)
+    # app.middleware('http')(exeption_middlewary)
