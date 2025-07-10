@@ -13,7 +13,7 @@ loggeer = logging.getLogger(__name__)
 @pytest.fixture(scope="session")
 def config() -> BaseConfig:
     loggeer.info("Setup config")
-    return setup_config("env/.test.env")
+    return setup_config()
 
 
 @pytest.fixture(scope="function")
@@ -25,7 +25,11 @@ def test_app(config: BaseConfig) -> FastAPI:
 
 
 @pytest_asyncio.fixture(scope="function")
-async def client(test_app: FastAPI):
+async def client(config: BaseConfig):
+    from app.web.app import setup_app
+
+    loggeer.info("Setup app")
+    test_app = setup_app()
     transport = ASGITransport(app=test_app)
     async with LifespanManager(test_app):
         async with AsyncClient(transport=transport, base_url="http://test") as ac:

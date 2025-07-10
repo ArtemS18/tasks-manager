@@ -11,18 +11,17 @@ class Store:
     def __init__(self, app: "FastAPI"):
         self.app = app
 
-        from app.store.bd.repository.tasks import TaskRepository
-        from app.store.bd.repository.user import UserRepository
+        from app.store.database.repository.tasks import TaskRepository
+        from app.store.database.repository.user import UserRepository
         from app.store.email.accessor import SMTPAccessor
         from app.store.redis.accessor import RedisAccessor
         from app.store.broker.accessor import BrokerAccessor
-        from app.broker import broker
 
         self.user = UserRepository(app)
         self.task = TaskRepository(app)
         self.redis = RedisAccessor(app)
         self.smtp = SMTPAccessor(app)
-        self.broker = BrokerAccessor(app, broker)
+        self.broker = BrokerAccessor(app)
 
     async def connect_all(self):
         for name, attr in vars(self).items():

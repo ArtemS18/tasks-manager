@@ -1,24 +1,30 @@
 import logging
+import sys
 from taskiq_aio_pika import AioPikaBroker
-from taskiq import TaskiqEvents, TaskiqState
-from app.web.config import setup_config, get_config
+from app.broker.tasks import setup_tasks
+from app.web.config import setup_config
 import taskiq_fastapi
 
+from app.web.logger.setup import setup_logger_from_config
 
-def setup_broker() -> AioPikaBroker:
-    setup_config()
-    config = get_config()
+
+APP_PATH = "app.web.app:setup_app"
+
+broker: AioPikaBroker | None = None
+
+
+def setup_broker_in_a_worker_process() -> AioPikaBroker:
+    config = setup_config()
+
+    log: logging.Logger = setup_logger_from_config(config=config, file_name=__name__)
+    log.info("Setup broker in worker proccess")
+
     broker = AioPikaBroker(config.rabbit.url)
+
+    setup_tasks(broker)
+    taskiq_fastapi.init(broker, APP_PATH)
     return broker
 
 
-broker = setup_broker()
-
-taskiq_fastapi.init(broker, "app.web.app:setup_app")
-
-log = logging.getLogger(__name__)
-
-
-@broker.on_event(TaskiqEvents.WORKER_STARTUP)
-async def on_worker_startup(state: TaskiqState):
-    log.info("SETUP WORKER")
+if sys.argv[0] == "worker":
+    broker = setup_broker_in_a_worker_process()

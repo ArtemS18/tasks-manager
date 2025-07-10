@@ -1,8 +1,8 @@
-from app.api.routers import setup_routers
+from app.web.routers import setup_routers
 from app.lib.fastapi import FastAPI
 from app.web.config import get_app_config
 from app.web.lifespan import lifespan
-from app.web.logger import setup_logger
+from app.web.logger.setup import setup_logger
 from app.web.middlewary import setup_middlewary
 
 from app.store import setup_store

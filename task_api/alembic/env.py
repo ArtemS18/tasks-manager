@@ -6,7 +6,7 @@ from sqlalchemy import Connection, pool
 
 from alembic import context
 from app.base.base_model import Base
-from app.store.bd import models
+from app.store.database import models
 from pathlib import Path
 from app.web.config import setup_config
 

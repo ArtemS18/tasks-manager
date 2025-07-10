@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 import typing
 
 if typing.TYPE_CHECKING:
@@ -16,7 +17,7 @@ PATHENV = {"test": ".test.env", "dev": ".dev.env", "local": ".local.env"}
 
 
 def get_path(env: str = "local", base_dir: str = BASEDIR):
-    return base_dir + "/" + PATHENV[env]
+    return base_dir + "/" + PATHENV.get(env, ".dev.env")
 
 
 class WebConig(BaseModel):
@@ -94,6 +95,10 @@ def setup_config(path: str = None, base_dir: str = BASEDIR) -> BaseConfig:
         env_file = path if path else get_path(base_dir=base_dir)
         logger.info("Config loaded from %s", env_file)
         config = BaseConfig(_env_file=env_file)
+
+    if sys.argv[0] == "worker":
+        config.env_type = "worker"
+
     return config
 
 

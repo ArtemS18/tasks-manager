@@ -21,7 +21,7 @@ def sync_engine(config: BaseConfig):
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_schema(sync_engine: Engine):
-    from app.store.bd import models
+    from app.store.database import models
     from app.base.base_model import Base
 
     schema = "test_schema"
