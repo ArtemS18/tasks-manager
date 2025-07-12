@@ -1,18 +1,38 @@
 import typing
+import logging
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     async_sessionmaker,
     AsyncSession,
     create_async_engine,
 )
-
+from sqlalchemy import exc
 from app.base.accessor import BaseAccessor
 from app.base.base_model import Base
+from app.web import exception
 
 if typing.TYPE_CHECKING:
     from app.web.app import FastAPI
 
 T = typing.TypeVar("T")
+
+log = logging.getLogger(__name__)
+
+
+def validate_error(func):
+    async def wrapper(self, *args, **kwargs):
+        try:
+            res = await func(self, *args, **kwargs)
+            return res
+        except exc.IntegrityError as e:
+            param = e._message().split("\n")[-1].strip()
+            log.error(param)
+            raise exception.get_already_exists_http_exeption(param)
+        except exc.SQLAlchemyError as e:
+            log.error(e)
+            raise exception.INVALID_DATA
+
+    return wrapper
 
 
 class PgAccessor(BaseAccessor):
@@ -33,6 +53,7 @@ class PgAccessor(BaseAccessor):
             self.engine = None
         self.session = None
 
+    @validate_error
     async def execute_one(
         self, query, model: typing.Type[T] = Base, commit=False
     ) -> typing.Optional[T]:
@@ -42,6 +63,7 @@ class PgAccessor(BaseAccessor):
                 await session.commit()
             return obj.scalar_one_or_none()
 
+    @validate_error
     async def execute_many(
         self, query, model: typing.Type[T] = Base, commit=False
     ) -> typing.Optional[T]:

@@ -21,11 +21,6 @@ class RefreshTokenRequest(Base):
     refresh_token: str
 
 
-class RefreshTokenDTO(Base):
-    token: str
-    expire: datetime
-
-
 class RefreshToken(Base):
     id: int
     token: str

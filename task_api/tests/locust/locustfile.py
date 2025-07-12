@@ -4,7 +4,7 @@ from uuid import uuid4
 
 
 class APIUser(HttpUser):
-    wait_time = between(1, 2)
+    wait_time = between(0.1, 0.3)
 
     @task
     def reg_user(self):
@@ -17,3 +17,8 @@ class APIUser(HttpUser):
             "name": "test_user",
         }
         resp = self.client.post("/auth/reg", json=data)
+
+    @task
+    def get_tasks(self):
+        token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhcnRvMjNyMTEyMjFqQGdtYWlsLmNvbSIsImlkIjozMTU5NCwibmFtZSI6ImFydGVta2EiLCJleHAiOjE3NTIxOTQ0MjV9.1TYoW1K0YSDOTGsHEIGjxuD_yIj5enkdcKV00QCJN9E"
+        self.client.get("/tasks/", headers={"Authorization": f"Bearer {token}"})

@@ -1,7 +1,9 @@
 from typing import Annotated
 from fastapi import APIRouter, Query, Depends
 
-from app.tasks.depends import TaskServiceDepends, validation_access_token
+from app.auth.depends.validations import validation_access_token
+from app.auth.schemas.users import User
+from app.tasks.depends import TaskServiceDepends
 from app.tasks.schemas.commets import Comments, CreateCommentDTO, Comment
 from app.tasks.schemas.filters import CommentsFilters, TaskFilters
 from app.tasks.schemas.tasks import CreateTaskDTO, Tasks, Task, UpdateTaskDTO
@@ -58,7 +60,10 @@ async def get_comments_from_task(
 
 @router.post("/{task_id}/comments/")
 async def create_comments(
-    task_id: int, service: TaskServiceDepends, comment_data: CreateCommentDTO
+    task_id: int,
+    service: TaskServiceDepends,
+    comment_data: CreateCommentDTO,
+    user: User = Depends(validation_access_token),
 ) -> Comment:
-    comment = await service.create_comment(task_id, comment_data)
+    comment = await service.create_comment(task_id, user, comment_data)
     return comment

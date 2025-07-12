@@ -1,10 +1,11 @@
+import logging
 import jwt
 from typing import Dict
 from datetime import datetime, timezone, timedelta
-
-from app.auth.schemas.token import RefreshTokenDTO
 from app.web.config import BaseConfig
-from app.web.exception import UNAUTHORIZE
+from app.web import exception
+
+log = logging.getLogger(__name__)
 
 
 class JwtService:
@@ -19,6 +20,8 @@ class JwtService:
     ):
         now = datetime.now(timezone.utc)
         encode = payload.copy()
+        if not encode.get("token_type"):
+            encode.update({"token_type": "access"})
         if expire_at is None:
             encode.update(
                 {
@@ -29,34 +32,22 @@ class JwtService:
             )
         else:
             encode.update({"exp": expire_at})
-        access_token = jwt.encode(
+        token = jwt.encode(
             encode, self._config.jwt.secret_key, self._config.jwt.algorithm
         )
-        return access_token
+        return token
 
     def verify_token(self, token: str) -> dict:
-        unautorized_exc = UNAUTHORIZE
         try:
             payload: dict = jwt.decode(
                 token, self._config.jwt.secret_key, self._config.jwt.algorithm
             )
-        except jwt.PyJWTError:
-            raise UNAUTHORIZE
-        sub = payload.get("sub")
-        if not sub:
-            unautorized_exc.detail = "Not valid token"
-            raise unautorized_exc
+        except jwt.ExpiredSignatureError:
+            raise exception.JWT_TOKEN_EXPIRED
+        except jwt.InvalidTokenError:
+            raise exception.JWT_BASE_EXEPTION
+        except jwt.DecodeError:
+            raise exception.JWT_DECODE_ERROR
+        if not payload.get("sub") or not payload.get("token_type"):
+            raise exception.JWT_BAD_CREDENSIALS
         return payload
-
-    def create_refresh_token(self, payload: Dict, expire: int | None = None):
-        now = datetime.now(timezone.utc)
-        expire_time = expire if expire else self._config.jwt.refresh_expire
-        expire_at = now + timedelta(expire_time)
-
-        token = self.create_token(payload=payload, expire_at=expire_at)
-        return RefreshTokenDTO(token=token, expire=expire_at)
-
-    def create_confirm_token(self, payload: Dict, expire: int | None = None):
-        return self.create_token(
-            payload=payload, expire=self._config.jwt.confirm_expire
-        )

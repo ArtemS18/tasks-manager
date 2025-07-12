@@ -1,6 +1,8 @@
 import logging
 import typing
 
+from app.base.accessor import BaseAccessor
+
 if typing.TYPE_CHECKING:
     from app.lib.fastapi import FastAPI
 
@@ -25,13 +27,17 @@ class Store:
 
     async def connect_all(self):
         for name, attr in vars(self).items():
-            if hasattr(attr, "connect") and callable(getattr(attr, "connect")):
+            if isinstance(attr, BaseAccessor) and callable(
+                getattr(attr, "connect", None)
+            ):
                 await attr.connect()
                 self.app.logger.info(f"Connected to {name}")
 
     async def disconnect_all(self):
         for name, attr in vars(self).items():
-            if hasattr(attr, "disconnect") and callable(getattr(attr, "disconnect")):
+            if isinstance(attr, BaseAccessor) and callable(
+                getattr(attr, "disconnect", None)
+            ):
                 await attr.disconnect()
                 self.app.logger.info(f"Disconnected to {name}")
 

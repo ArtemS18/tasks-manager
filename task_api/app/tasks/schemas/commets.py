@@ -15,4 +15,3 @@ class Comments(Base):
 
 class CreateCommentDTO(Base):
     text: str
-    author_id: int

@@ -1,14 +1,24 @@
 from datetime import datetime
 import logging
-from fastapi import HTTPException
 from sqlalchemy import desc, insert, select, update
 
 from app.store.database.models import User, RefreshToken
 from app.auth.schemas.users import CreateUserDTO
 from app.store.database.accessor import PgAccessor
 from app.lib.utils import async_time
+from app.web import exception
 
 logger = logging.getLogger(__name__)
+
+
+def check_user_exists(func):
+    async def wrapper(self, user_id: int, *args, **kwargs):
+        if not self.get_user_by_id(user_id):
+            raise exception.USER_NOT_FOUND
+        res = await func(user_id, *args, **kwargs)
+        return res
+
+    return wrapper
 
 
 class UserRepository(PgAccessor):
@@ -56,10 +66,8 @@ class UserRepository(PgAccessor):
         res = await self.execute_one(query, RefreshToken)
         return res
 
+    @check_user_exists
     async def update_user(self, user_id: int, **kwargs):
-        if not await self.get_user_by_id(user_id):
-            raise HTTPException(status_code=409, detail="User not found")
-
         query = update(User).values(**kwargs).where(User.id == user_id).returning(User)
         res = await self.execute_one(query, User, commit=True)
         return res

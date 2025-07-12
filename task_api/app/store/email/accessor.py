@@ -24,9 +24,6 @@ class SMTPAccessor:
             await client.login(self.config.email, self.config.password)
         return client
 
-    async def disconnect(self):
-        pass
-
     async def send_hello_email(self, user_id: int):
         user = await self.app.store.user.get_user_by_id(user_id)
 

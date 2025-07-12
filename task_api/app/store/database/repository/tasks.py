@@ -7,6 +7,16 @@ from app.tasks.models.tasks import Task, Comment
 from app.tasks.schemas.tasks import CreateTaskDTO, UpdateTaskDTO
 from app.auth.schemas.users import User
 from app.store.database.accessor import PgAccessor
+from app.web import exception
+
+
+def check_task_exists(func):
+    async def wrapper(self, task_id, *args, **kwargs):
+        if not await self.get_task(task_id):
+            raise exception.TASK_NOT_FOUND
+        return await func(self, task_id, *args, **kwargs)
+
+    return wrapper
 
 
 class TaskRepository(PgAccessor):
@@ -44,6 +54,7 @@ class TaskRepository(PgAccessor):
         query = insert(Task).values(**create_values).returning(Task)
         return await self.execute_one(query, Task, commit=True)
 
+    @check_task_exists
     async def update_task(self, task_id: int, update_task: UpdateTaskDTO) -> Task:
         update_values = {
             k: v for k, v in update_task.model_dump().items() if v is not None
@@ -59,10 +70,12 @@ class TaskRepository(PgAccessor):
         print("update result:", task.__repr__())
         return res
 
+    @check_task_exists
     async def delete_task(self, task_id: int) -> Task:
         query = delete(Task).where(Task.id == task_id).returning(Task)
         return await self.execute_one(query, Task, commit=True)
 
+    @check_task_exists
     async def get_comments_from_task(
         self, task_id: int, filters: CommentsFilters
     ) -> List[Comment]:
@@ -71,11 +84,14 @@ class TaskRepository(PgAccessor):
 
         return await self.execute_many(query, List[Comment])
 
+    @check_task_exists
     async def create_comment(
-        self, task_id: int, comment_data: CreateCommentDTO
+        self, task_id: int, user_id: int, comment_data: CreateCommentDTO
     ) -> Comment:
         create_values = {k: v for k, v in comment_data.model_dump().items()}
         query = (
-            insert(Comment).values(task_id=task_id, **create_values).returning(Comment)
+            insert(Comment)
+            .values(task_id=task_id, author_id=user_id, **create_values)
+            .returning(Comment)
         )
         return await self.execute_one(query, Comment, commit=True)

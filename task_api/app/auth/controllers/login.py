@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import logging
 from fastapi import HTTPException
 from app.auth.schemas.auth import AuthoSchema
@@ -11,29 +11,31 @@ from app.auth.controllers.password import (
     hash_password_async,
 )
 from app.auth.models.enyms import UserStatus
-from app.web.exception import FORBIDDEN, INVALID_DATA, UNAUTHORIZE
+from app.web.config import BaseConfig
+from app.web import exception
 from app.lib.utils import async_time
 
 logger = logging.getLogger(__name__)
 
 
 class LoginService:
-    def __init__(self, repository, jwt):
+    def __init__(self, config, repository, jwt):
+        self.config: BaseConfig = config
         self.repository: UserRepository = repository
         self.jwt: JwtService = jwt
 
     async def authentication_user_by_email(self, email: str) -> User:
         orm_user = await self.repository.get_user_by_email(email)
         if orm_user is None:
-            raise UNAUTHORIZE
+            raise exception.USER_NOT_FOUND
         return User.model_validate(orm_user)
 
     async def authorizition_user(self, form_data: AuthoSchema) -> User:
         user: User = await self.authentication_user_by_email(form_data.username)
         if user.status != UserStatus.active:
-            raise FORBIDDEN
+            raise exception.FORBIDDEN
         if not verify_password(str(form_data.password), str(user.hashed_password)):
-            raise UNAUTHORIZE
+            raise exception.INVALID_PASSWORD
         return user
 
     @async_time
@@ -43,46 +45,53 @@ class LoginService:
                 status_code=409, detail="Email address already registered."
             )
         new_user.password = await hash_password_async(new_user.password)
-        try:
-            orm_user = await self.repository.create_user(new_user)
-        except Exception as error:
-            logger.error(error)
-            raise INVALID_DATA
+        orm_user = await self.repository.create_user(new_user)
         return User.model_validate(orm_user)
 
     async def create_access_token(self, user: User) -> str:
-        payload = {"sub": user.login, "id": user.id, "name": user.name}
+        payload = {"sub": user.login, "id": user.id, "token_type": "access"}
 
         token = self.jwt.create_token(payload)
         return token
 
     @async_time
     async def create_refresh_token(self, user: User) -> str:
-        payload = {"sub": user.login, "id": user.id}
-        refresh = self.jwt.create_refresh_token(payload)
-        await self.repository.create_refresh_token(
-            refresh.token, refresh.expire, user.id
-        )
-        return refresh.token
+        payload = {"sub": user.login, "id": user.id, "token_type": "refresh"}
 
-    async def validation_refresh_token(self, user: User, refresh_token: str):
+        now = datetime.now(timezone.utc)
+        expire_at = now + timedelta(self.config.jwt.refresh_expire)
+        refresh_token = self.jwt.create_token(payload, expire_at=expire_at)
+
+        await self.repository.create_refresh_token(refresh_token, expire_at, user.id)
+        logger.info("New refresh token was created for user %s", user.id)
+        return refresh_token
+
+    async def base_validation_token(
+        self, token: str | None, token_type: str = "access"
+    ):
+        if token is None:
+            raise exception.JWT_MISSING_TOKEN
+
+        payload = self.jwt.verify_token(token)
+        if payload.get("token_type") != token_type:
+            raise exception.JWT_BAD_CREDENSIALS
+        email = payload.get("sub")
+        user = await self.authentication_user_by_email(email)
+        return user
+
+    async def validation_refresh_token(self, refresh_token: str | None):
+        user = await self.base_validation_token(refresh_token, token_type="refresh")
+
         orm_token = await self.repository.get_refresh_token(user.id, refresh_token)
         token = RefreshToken.model_validate(orm_token)
         if token is None:
-            raise HTTPException(
-                status_code=403, detail="Authorizate error refresh token"
-            )
+            raise exception.REFRESH_TOKEN_NOT_FOUND
         if token.blocked:
-            raise HTTPException(
-                status_code=403, detail="Authorizate error refresh token is blocked"
-            )
+            raise exception.FORBIDDEN
         if token.expire_at < datetime.now(timezone.utc):
-            raise HTTPException(status_code=401, detail="Refresh token expire time out")
-        logger.info("New refresh token was created for user %s", user.id)
-        return token.token
+            raise exception.JWT_TOKEN_EXPIRED
+        return user
 
-    async def validation_user(self, token: str | None):
-        payload = self.jwt.verify_token(token)
-        email = payload.get("sub")
-        user = await self.authentication_user_by_email(email)
+    async def validation_access_token(self, access_token: str | None):
+        user = await self.base_validation_token(access_token, token_type="access")
         return user

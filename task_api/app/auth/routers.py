@@ -42,7 +42,7 @@ async def login_user(
     )
 
 
-@router.post("/reg")
+@router.post("/reg", summary="Create user and notice code from email")
 async def reg_user(
     form_data: Annotated[RegisterSchema, Body()],
     auth_service: LoginServiceDepends,
@@ -54,7 +54,7 @@ async def reg_user(
     return ConfirmTokenResponse(confirm_token=token)
 
 
-@router.post("/confirm", response_model=OKResponseSchema)
+@router.post("/confirm", response_model=OKResponseSchema, summary="Email verification")
 async def confirm_email(
     service: ConfirmEmailServiceDepends,
     form: UserCredentials = Depends(validation_confirm_token),
