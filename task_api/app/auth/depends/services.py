@@ -13,7 +13,9 @@ def jwt_service(req: Request) -> JwtService:
 
 
 def login_service(req: Request, auth=Depends(jwt_service)):
-    return LoginService(config=req.app.config, repository=req.app.store.user, jwt=auth)
+    return LoginService(
+        config=req.app.config, repository=req.app.store.repo.user, jwt=auth
+    )
 
 
 def confirm_email_service(
@@ -21,7 +23,7 @@ def confirm_email_service(
 ) -> ConfirmEmailService:
     store = req.app.store
     return ConfirmEmailService(
-        req.app.config, store.broker, store.user, store.redis, jwt
+        req.app.config, store.broker, store.repo.user, store.redis, jwt
     )
 
 

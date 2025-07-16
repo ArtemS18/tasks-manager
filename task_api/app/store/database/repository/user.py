@@ -2,6 +2,7 @@ from datetime import datetime
 import logging
 from sqlalchemy import desc, insert, select, update
 
+from app.projects.models.member import Member
 from app.store.database.models import User, RefreshToken
 from app.auth.schemas.users import CreateUserDTO
 from app.store.database.accessor import PgAccessor
@@ -25,13 +26,12 @@ class UserRepository(PgAccessor):
     @async_time
     async def get_user_by_email(self, email: str) -> User:
         query = select(User).where(User.login == email)
-        return await self.execute_one(query, User)
+        return await self.execute_one_or_none(query, User)
 
     async def get_user_by_id(self, user_id: int) -> User:
         query = select(User).where(User.id == user_id)
         return await self.execute_one(query, User)
 
-    @async_time
     async def create_user(self, new_user: CreateUserDTO) -> User:
         query = (
             insert(User)
@@ -70,4 +70,13 @@ class UserRepository(PgAccessor):
     async def update_user(self, user_id: int, **kwargs):
         query = update(User).values(**kwargs).where(User.id == user_id).returning(User)
         res = await self.execute_one(query, User, commit=True)
+        return res
+
+    async def get_user_by_project_id(self, user_id: int, project_id: int):
+        query = (
+            select(User)
+            .join(Member, Member.user_id == User.id)
+            .where((User.id == user_id) & (Member.project_id == project_id))
+        ).limit(1)
+        res = await self.execute_one(query, User)
         return res

@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import (
     AsyncSession,
     create_async_engine,
 )
-from sqlalchemy import exc
+from sqlalchemy import Result, exc
 from app.base.accessor import BaseAccessor
 from app.base.base_model import Base
 from app.web import exception
@@ -53,22 +53,30 @@ class PgAccessor(BaseAccessor):
             self.engine = None
         self.session = None
 
+    async def _execute(self, query, commit=True) -> Result[T]:
+        async with self.session() as session:
+            res: Result[T] = await session.execute(query)
+            if commit:
+                await session.commit()
+            return res
+
+    @validate_error
+    async def execute_one_or_none(
+        self, query, model: typing.Type[T] = Base, commit=False
+    ) -> typing.Optional[T]:
+        obj = await self._execute(query, commit)
+        return obj.scalar_one_or_none()
+
     @validate_error
     async def execute_one(
         self, query, model: typing.Type[T] = Base, commit=False
     ) -> typing.Optional[T]:
-        async with self.session() as session:
-            obj = await session.execute(query)
-            if commit:
-                await session.commit()
-            return obj.scalar_one_or_none()
+        obj = await self._execute(query, commit)
+        return obj.scalar_one()
 
     @validate_error
     async def execute_many(
         self, query, model: typing.Type[T] = Base, commit=False
     ) -> typing.Optional[T]:
-        async with self.session() as session:
-            obj = await session.execute(query)
-            if commit:
-                await session.commit()
-            return obj.scalars().all()
+        obj = await self._execute(query, commit)
+        return obj.scalars().all()

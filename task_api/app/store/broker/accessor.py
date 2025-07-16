@@ -43,3 +43,14 @@ class BrokerAccessor(BaseAccessor):
         task = self.broker.get_all_tasks().get(task_path)
         await task.kiq(user_id)
         log.info(f"Task: {task.__repr__()} added in broker")
+
+    async def send_join_from_project_email(
+        self,
+        project_id: int,
+        user_id: int,
+        owned_id: int,
+    ):
+        task_path = self.get_task("send_join_in_project_email_task")
+        task = self.broker.get_all_tasks().get(task_path)
+        await task.kiq(project_id, user_id, owned_id)
+        log.info(f"Task: {task.__repr__()} added in broker")

@@ -22,5 +22,5 @@ class User(Base):
 class CreateUserDTO(Base):
     tg_id: int
     name: str
-    login: str
+    login: EmailStr
     password: str

@@ -69,9 +69,24 @@ FORBIDDEN = HTTPException(
     detail="User has blocked or not confirmed email",
 )
 
+DENITE = HTTPException(
+    status_code=status.HTTP_403_FORBIDDEN,
+    detail="The user has not joined this project.",
+)
+
+FORBIDDEN_CANT_USE = HTTPException(
+    status_code=status.HTTP_403_FORBIDDEN,
+    detail="Cant use this command",
+)
+
 TASK_NOT_FOUND = HTTPException(
     status_code=status.HTTP_404_NOT_FOUND,
     detail="Task not found",
+)
+
+MEMBER_NOT_FOUND = HTTPException(
+    status_code=status.HTTP_404_NOT_FOUND,
+    detail="Members not found",
 )
 
 

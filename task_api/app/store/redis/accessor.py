@@ -18,7 +18,7 @@ class RedisAccessor(BaseAccessor):
 
     async def disconnect(self):
         if self.redis is not None:
-            await self.redis.close()
+            await self.redis.aclose()
 
     async def create_confirming_password(
         self, user_id: int, password: str, expire_seconds: int = None

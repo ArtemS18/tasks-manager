@@ -35,7 +35,7 @@ async def validation_confirm_token(
 async def validation_access_token(
     access_token: ValidateAccessToken,
     service: LoginServiceDepends,
-):
+) -> User:
     user = await service.validation_access_token(access_token)
     return user
 

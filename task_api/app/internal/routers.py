@@ -2,10 +2,10 @@ from typing import Annotated
 from fastapi import APIRouter, Query, Depends
 
 from app.internal.depends import validation_internal_token
-from app.tasks.depends import TaskServiceDepends
-from app.tasks.schemas.commets import Comments
-from app.tasks.schemas.filters import CommentsFilters, TaskFilters
-from app.tasks.schemas.tasks import CreateTaskDTO, Tasks, Task
+from app.projects.depends.task import TaskServiceDepends
+from app.projects.schemas.commets import Comments
+from app.projects.schemas.filters import CommentsFilters, TaskFilters
+from app.projects.schemas.tasks import CreateTaskDTO, Tasks, Task
 
 router = APIRouter(
     prefix="/tasks",
