@@ -13,7 +13,11 @@ logger = logging.getLogger(__name__)
 
 
 def check_user_exists(func):
-    async def wrapper(self, user_id: int, *args, **kwargs):
+    async def wrapper(
+        self: UserRepository, user_id: int | None = None, *args, **kwargs
+    ):
+        if user_id is None:
+            user_id = kwargs.get("user_id")
         if not self.get_user_by_id(user_id):
             raise exception.USER_NOT_FOUND
         res = await func(user_id, *args, **kwargs)
@@ -23,7 +27,6 @@ def check_user_exists(func):
 
 
 class UserRepository(PgAccessor):
-    @async_time
     async def get_user_by_email(self, email: str) -> User:
         query = select(User).where(User.login == email)
         return await self.execute_one_or_none(query, User)
@@ -60,16 +63,16 @@ class UserRepository(PgAccessor):
         query = (
             select(RefreshToken)
             .where(RefreshToken.user_id == user_id, RefreshToken.token == token)
-            .order_by(desc(RefreshToken.created_at))
             .limit(1)
         )
-        res = await self.execute_one(query, RefreshToken)
+        res = await self.execute_one_or_none(query, RefreshToken)
         return res
 
-    @check_user_exists
     async def update_user(self, user_id: int, **kwargs):
         query = update(User).values(**kwargs).where(User.id == user_id).returning(User)
-        res = await self.execute_one(query, User, commit=True)
+        res = await self.execute_one_or_none(query, User, commit=True)
+        if res is None:
+            raise exception.USER_NOT_FOUND
         return res
 
     async def get_user_by_project_id(self, user_id: int, project_id: int):

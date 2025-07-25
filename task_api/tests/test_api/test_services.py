@@ -8,13 +8,13 @@ from unittest.mock import AsyncMock
 
 from app.projects.models.member import Member
 from app.projects.models.project import Project
-from app.projects.schemas.tasks import Task
+from app.projects.schemas.tasks.dto import Task
 
 
 @pytest.mark.asyncio
 async def test_create_task_service(test_app: FastAPI, create_member: Member):
     from app.projects.services.task import TaskService
-    from app.projects.schemas.tasks import Task, CreateTaskDTO
+    from app.projects.schemas.tasks.web import Task, CreateTaskDTO
 
     data = CreateTaskDTO(
         text="Task1",
@@ -31,7 +31,7 @@ async def test_create_task_service(test_app: FastAPI, create_member: Member):
 @pytest.mark.asyncio
 async def test_update_task_service(test_app: FastAPI, create_member: Member):
     from app.projects.services.task import TaskService
-    from app.projects.schemas.tasks import CreateTaskDTO, UpdateTaskDTO
+    from app.projects.schemas.tasks.web import CreateTaskDTO, UpdateTaskDTO
 
     data = CreateTaskDTO(
         text="Task1",
@@ -59,7 +59,7 @@ async def test_update_task_service(test_app: FastAPI, create_member: Member):
 
 @pytest.mark.asyncio
 async def test_member_repo(test_app: FastAPI, create_member: Member, setup_schema):
-    from app.projects.schemas.members import Member
+    from app.projects.schemas.members.web import Member
 
     true_member = Member(
         id=create_member.id,
@@ -80,7 +80,7 @@ async def test_get_member_service(
     test_app: FastAPI, create_user: User, create_member: Member
 ):
     from app.projects.services.members import MemberService
-    from app.projects.schemas.members import MemberResponse
+    from app.projects.schemas.members.web import MemberResponse
 
     member_data = MemberResponse(
         member_id=create_member.id,
@@ -102,7 +102,7 @@ async def test_get_member_service_with_filters(
     test_app: FastAPI, create_user: User, create_member: Member, create_task: Task
 ):
     from app.projects.services.members import MemberService
-    from app.projects.schemas.members import MemberResponse
+    from app.projects.schemas.members.web import MemberResponse
     from app.projects.schemas.filters import MembersFilters
 
     member_data = MemberResponse(

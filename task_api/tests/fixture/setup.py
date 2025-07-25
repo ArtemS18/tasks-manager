@@ -8,7 +8,7 @@ from httpx import ASGITransport, AsyncClient
 import pytest
 
 from app.projects.models.project import Project
-from app.projects.schemas.members import Member
+from app.projects.schemas.members.dto import Member
 from app.web.config import BaseConfig, setup_config
 
 loggeer = logging.getLogger(__name__)
@@ -58,7 +58,7 @@ async def create_user(test_app: FastAPI, setup_schema):
 
 @pytest_asyncio.fixture(scope="function")
 async def create_project(test_app: FastAPI, create_user: User):
-    from app.projects.schemas.projects import CreateProjectDTO
+    from app.projects.schemas.projects.projects import CreateProjectDTO
 
     create_project = CreateProjectDTO(name="project1", owner_id=create_user.id)
     project = await test_app.store.repo.project.create_project(create_project)
@@ -67,7 +67,7 @@ async def create_project(test_app: FastAPI, create_user: User):
 
 @pytest_asyncio.fixture(scope="function")
 async def create_member(test_app: FastAPI, create_user: User, create_project: Project):
-    from app.projects.schemas.members import CreateMemberSchema
+    from app.projects.schemas.members.web import CreateMemberSchema
 
     create_member = CreateMemberSchema(
         user_id=create_user.id, project_id=create_project.id
@@ -78,7 +78,7 @@ async def create_member(test_app: FastAPI, create_user: User, create_project: Pr
 
 @pytest_asyncio.fixture(scope="function")
 async def create_task(test_app: FastAPI, create_member: Member):
-    from app.projects.schemas.tasks import CreateTaskDTO
+    from app.projects.schemas.tasks.web import CreateTaskDTO
 
     create_task = CreateTaskDTO(
         text="Task1",

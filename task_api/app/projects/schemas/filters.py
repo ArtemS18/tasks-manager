@@ -15,7 +15,7 @@ class TaskFilters(BaseFilters):
 
 
 class CommentsFilters(BaseFilters):
-    pass
+    author_id: int | None = Field(default=None, ge=0)
 
 
 class MembersFilters(BaseFilters):

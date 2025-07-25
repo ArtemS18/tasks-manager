@@ -1,16 +1,13 @@
-from datetime import datetime
 from logging import getLogger
-from typing import List, cast, Tuple
-from sqlalchemy import Result, delete, insert, select, update, exc, or_
-from app.auth.models.users import User
-from app.projects.models.enums import MemberRole, MemberStatus
+from typing import List
+from sqlalchemy import delete, exists, select, update
+from sqlalchemy.orm import selectinload
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from app.projects.models.member import Assign
-from app.projects.models.tasks import Task
 from app.projects.schemas.filters import BaseFilters, MembersFilters
-from app.projects.schemas.members import (
+from app.projects.schemas.members.dto import UpdateMemberDTO
+from app.projects.schemas.members.web import (
     CreateMemberSchema,
-    MemberResponse,
-    UpdateMemberDTO,
 )
 
 from app.projects.models import Member
@@ -30,9 +27,21 @@ def check_member_exists(func):
     return wrapper
 
 
+member_options = (selectinload(Member.user), selectinload(Member.project))
+
+
 class MemberRepository(PgAccessor):
+    async def is_exist_member(self, member_id: int, project_id: int) -> bool:
+        query = select(
+            exists()
+            .where(Member.id == member_id)
+            .where(Member.project_id == project_id)
+        )
+        res: bool = await self.execute_one(query)
+        return res
+
     async def get_member(self, member_id: int) -> Member:
-        query = select(Member).where(Member.id == member_id)
+        query = select(Member).where(Member.id == member_id).options(*member_options)
         res = await self.execute_one_or_none(query, Member)
         return res
 
@@ -46,14 +55,17 @@ class MemberRepository(PgAccessor):
         return res
 
     async def create_member(self, create_member: CreateMemberSchema) -> Member:
-        old_member = await self.get_member_by_user_id_and_project_id(
-            user_id=create_member.user_id, project_id=create_member.project_id
-        )
-        if old_member:
-            raise exception.BD_ERROR_UNIQUE
         create_values = create_member.model_dump()
-        query = insert(Member).values(**create_values).returning(Member)
-        res = await self.execute_one(query, Member, commit=True)
+        query = (
+            pg_insert(Member)
+            .values(**create_values)
+            .on_conflict_do_nothing(index_elements=["project_id", "user_id"])
+            .returning(Member)
+            .options(*member_options)
+        )
+        res = await self.execute_one_or_none(query, Member, commit=True)
+        if res is None:
+            raise exception.BD_ERROR_UNIQUE
         return res
 
     async def get_members_by_project(
@@ -65,7 +77,15 @@ class MemberRepository(PgAccessor):
         res = await self.execute_many(query, List[Member])
         return res
 
-    @check_member_exists
+    async def get_member_by_project(self, project_id: int, member_id: int) -> Member:
+        query = select(Member).where(
+            (Member.project_id == project_id) & (Member.id == member_id)
+        )
+        res = await self.execute_one_or_none(query, Member)
+        if res is None:
+            raise exception.MEMBER_NOT_FOUND
+        return res
+
     async def update_member(
         self, poject_id: int, member_id: int, member_data: UpdateMemberDTO
     ) -> Member:
@@ -77,44 +97,60 @@ class MemberRepository(PgAccessor):
             .values(**update_values)
             .where((Member.project_id == poject_id) & (Member.id == member_id))
             .returning(Member)
+            .options(*member_options)
         )
-        return await self.execute_one(query, Member, commit=True)
+        res = await self.execute_one_or_none(query, Member, commit=True)
+        if res is None:
+            raise exception.MEMBER_NOT_FOUND
+        return res
 
-    async def get_members_with_user_data_by_project_id(
+    async def get_members_full(
         self, project_id: int, filters: MembersFilters | None
-    ) -> dict:
+    ) -> Member:
         query = (
-            select(
-                Member.id,
-                User.name,
-                User.login,
-                User.tg_id,
-                Member.role,
-                Member.status,
-                Member.created_at,
-            )
-            .join(User, User.id == Member.user_id)
+            select(Member)
             .where(Member.project_id == project_id)
+            .options(*member_options)
         )
         if filters:
             query = query_filters.add_members_filters(query, filters)
 
-        res = await self._execute(query)
-        list_items: List[
-            Tuple[int, str, str, int, MemberRole, MemberStatus, datetime]
-        ] = res.all()
+        members = await self.execute_many(query, Member)
+        if members == []:
+            raise exception.MEMBER_NOT_FOUND
+        return members
 
-        list_dict = [
-            {
-                "member_id": member_id,
-                "name": name,
-                "login": login,
-                "tg_id": tg_id,
-                "role": role,
-                "status": status,
-                "created_at": created_at,
-            }
-            for member_id, name, login, tg_id, role, status, created_at in list_items
-        ]
-        log.info(list_dict)
-        return list_dict
+    async def get_member_full(self, project_id: int, member_id: int) -> Member:
+        query = (
+            select(Member)
+            .where((Member.project_id == project_id) & (Member.id == member_id))
+            .options(*member_options)
+        )
+        member = await self.execute_one_or_none(query, Member)
+        if member is None:
+            raise exception.MEMBER_NOT_FOUND
+        return member
+
+    async def delete_member(self, project_id: int, member_id: int) -> Member:
+        query = (
+            delete(Member)
+            .where((Member.project_id == project_id) & (Member.id == member_id))
+            .returning(Member)
+        )
+        member = await self.execute_one_or_none(query, Member)
+        if member is None:
+            raise exception.MEMBER_NOT_FOUND
+        return member
+
+    async def create_assigned(self, task_id: int, member_id: int):
+        query = (
+            pg_insert(Assign)
+            .values(task_id=task_id, member_id=member_id)
+            .on_conflict_do_nothing(index_elements=["task_id", "member_id"])
+            .returning(Assign)
+        )
+        res = await self.execute_one_or_none(query, commit=True)
+
+        if res is None:
+            raise exception.BD_ERROR_UNIQUE
+        return res

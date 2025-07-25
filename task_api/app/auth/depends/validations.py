@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Body, Depends
+from fastapi import Body, Cookie, Depends
 from fastapi.security import OAuth2PasswordBearer
 from app.auth.depends.services import (
     ConfirmEmailServiceDepends,
@@ -17,7 +17,7 @@ ValidateAccessToken = Annotated[str, Depends(oauth2_schema)]
 
 
 async def validation_refresh_token(
-    data: Annotated[RefreshTokenRequest, Body()],
+    data: Annotated[RefreshTokenRequest, Cookie()],
     service: LoginServiceDepends,
 ):
     user = await service.validation_refresh_token(data.refresh_token)

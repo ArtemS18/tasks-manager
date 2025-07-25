@@ -22,6 +22,7 @@ from app.auth.schemas.token import (
 )
 from app.auth.schemas.users import UserSchemaResponse, User
 from app.lib.shemas import OKResponseSchema
+from app.lib.utils import set_cookie
 
 logger = logging.getLogger(__name__)
 
@@ -30,15 +31,17 @@ router = APIRouter(prefix="/auth", tags=["Autorization"])
 
 @router.post("/token")
 async def login_user(
+    resp: Response,
     service: LoginServiceDepends,
     form_data: Annotated[AuthoSchema, Form()],
 ) -> AccessAndRefreshTokenResponse:
     user = await service.authorizition_user(form_data)
     access_token = await service.create_access_token(user)
     refresh_token = await service.create_refresh_token(user)
+    set_cookie(resp, "refresh_token", refresh_token)
 
     return AccessAndRefreshTokenResponse(
-        access_token=access_token, refresh_token=refresh_token
+        access_token=access_token, refresh_token_in_cookie=True
     )
 
 

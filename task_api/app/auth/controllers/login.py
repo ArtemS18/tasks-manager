@@ -24,6 +24,10 @@ class LoginService:
         self.repository: UserRepository = repository
         self.jwt: JwtService = jwt
 
+        for name, obj in vars(self).items():
+            if callable(obj) and not name.startswith("__"):
+                setattr(self, name, async_time(obj))
+
     async def authentication_user_by_email(self, email: str) -> User:
         orm_user = await self.repository.get_user_by_email(email)
         if orm_user is None:
@@ -38,7 +42,6 @@ class LoginService:
             raise exception.INVALID_PASSWORD
         return user
 
-    @async_time
     async def register_user(self, new_user: CreateUserDTO) -> User:
         if await self.repository.get_user_by_email(new_user.login):
             raise HTTPException(
@@ -54,12 +57,11 @@ class LoginService:
         token = self.jwt.create_token(payload)
         return token
 
-    @async_time
     async def create_refresh_token(self, user: User) -> str:
         payload = {"sub": user.login, "id": user.id, "token_type": "refresh"}
 
         now = datetime.now(timezone.utc)
-        expire_at = now + timedelta(self.config.jwt.refresh_expire)
+        expire_at = now + timedelta(minutes=self.config.jwt.refresh_expire)
         refresh_token = self.jwt.create_token(payload, expire_at=expire_at)
 
         await self.repository.create_refresh_token(refresh_token, expire_at, user.id)
@@ -79,13 +81,28 @@ class LoginService:
         user = await self.authentication_user_by_email(email)
         return user
 
+    async def validation_by_id(
+        self, token: str | None, token_type: str = "access"
+    ) -> int:
+        if token is None:
+            raise exception.JWT_MISSING_TOKEN
+
+        payload = self.jwt.verify_token(token)
+        if payload.get("token_type") != token_type:
+            raise exception.JWT_BAD_CREDENSIALS
+        id = payload.get("id")
+        if id is None:
+            raise exception.JWT_BAD_CREDENSIALS
+        return id
+
     async def validation_refresh_token(self, refresh_token: str | None):
         user = await self.base_validation_token(refresh_token, token_type="refresh")
 
         orm_token = await self.repository.get_refresh_token(user.id, refresh_token)
-        token = RefreshToken.model_validate(orm_token)
-        if token is None:
+
+        if orm_token is None:
             raise exception.REFRESH_TOKEN_NOT_FOUND
+        token = RefreshToken.model_validate(orm_token)
         if token.blocked:
             raise exception.FORBIDDEN
         if token.expire_at < datetime.now(timezone.utc):

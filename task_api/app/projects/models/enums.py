@@ -17,3 +17,18 @@ class MemberRole(PyEnym):
 class MemberStatus(PyEnym):
     active = "active"
     blocked = "blocked"
+
+
+class TaskPriority(PyEnym):
+    low = "low"
+    default = "default"
+    high = "high"
+    very_high = "very_high"
+
+
+class RolePermission(PyEnym):
+    read = "read"
+    create = "create"
+    update = "update"
+    delete = "delete"
+    all_permissions = "all_permissions"

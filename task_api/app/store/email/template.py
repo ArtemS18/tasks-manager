@@ -1,7 +1,7 @@
 from email.message import EmailMessage
 
 from app.auth.schemas.users import User
-from app.projects.schemas.projects import Project
+from app.projects.schemas.projects.projects import Project
 
 
 def hello_template(from_email: str, to_email: str) -> EmailMessage:

@@ -12,7 +12,7 @@ def get_member_repo(req: Request):
 def get_member_service(
     req: Request, member_repo: MemberRepository = Depends(get_member_repo)
 ):
-    return MemberService(member_repo=member_repo)
+    return MemberService(member_repo=member_repo, task_repo=req.app.store.repo.task)
 
 
 MemberServiceDepend = Annotated[MemberService, Depends(get_member_service)]

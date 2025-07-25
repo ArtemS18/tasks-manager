@@ -32,6 +32,6 @@ def create_confirm_password(leght: int = 6, letters=True):
     if letters:
         chars += uppercase
 
-    for i in range(leght):
+    for _ in range(leght):
         password += choice(chars)
     return password

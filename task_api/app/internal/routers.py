@@ -3,9 +3,9 @@ from fastapi import APIRouter, Query, Depends
 
 from app.internal.depends import validation_internal_token
 from app.projects.depends.task import TaskServiceDepends
-from app.projects.schemas.commets import Comments
+from app.projects.schemas.comments.dto import Comments
 from app.projects.schemas.filters import CommentsFilters, TaskFilters
-from app.projects.schemas.tasks import CreateTaskDTO, Tasks, Task
+from app.projects.schemas.tasks.dto import CreateTaskDTO, Tasks, Task
 
 router = APIRouter(
     prefix="/tasks",
@@ -36,5 +36,5 @@ async def get_comment_from_task(
     service: TaskServiceDepends,
     filter_query: Annotated[CommentsFilters, Query()],
 ) -> Comments:
-    comments = await service.get_comments_from_task(task_id, filter_query)
+    comments = await service.get_comments(task_id, filter_query)
     return comments

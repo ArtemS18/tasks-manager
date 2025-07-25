@@ -10,7 +10,7 @@ class TokenResponse(Base):
 class AccessAndRefreshTokenResponse(Base):
     token_type: str = "Bearer"
     access_token: str
-    refresh_token: str
+    refresh_token_in_cookie: bool
 
 
 class ConfirmTokenResponse(Base):

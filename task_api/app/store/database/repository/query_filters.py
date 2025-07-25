@@ -1,11 +1,18 @@
 from sqlalchemy import Select, and_, exists, not_, or_, select
 from app.projects.models.member import Assign, Member
-from app.projects.models.tasks import Task
-from app.projects.schemas.filters import BaseFilters, MembersFilters
+from app.projects.models.tasks import Comment, Task
+from app.projects.schemas.filters import BaseFilters, CommentsFilters, MembersFilters
 
 
 def add_base_filters(query: Select, filters: BaseFilters):
     query = query.limit(filters.limit).offset(filters.offset)
+    return query
+
+
+def add_comment_filters(query: Select, filters: CommentsFilters):
+    if filters.author_id is not None:
+        query = query.where(Comment.author_id == filters.author_id)
+    query = add_base_filters(query, filters)
     return query
 
 

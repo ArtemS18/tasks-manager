@@ -1,5 +1,6 @@
 import typing
 import logging
+from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     async_sessionmaker,
@@ -10,6 +11,7 @@ from sqlalchemy import Result, exc
 from app.base.accessor import BaseAccessor
 from app.base.base_model import Base
 from app.web import exception
+from app.lib.utils import async_time
 
 if typing.TYPE_CHECKING:
     from app.web.app import FastAPI
@@ -36,6 +38,12 @@ def validate_error(func):
 
 
 class PgAccessor(BaseAccessor):
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        for name, obj in cls.__dict__.items():
+            if callable(obj) and not name.startswith("__"):
+                setattr(cls, name, async_time(obj))
+
     def __init__(self, app: "FastAPI"):
         super().__init__(app)
         self.engine: AsyncEngine | None = None
@@ -59,6 +67,12 @@ class PgAccessor(BaseAccessor):
             if commit:
                 await session.commit()
             return res
+
+    @asynccontextmanager
+    async def get_transaction(self) -> typing.AsyncIterator[AsyncSession]:
+        async with self.session() as session:
+            async with session.begin():
+                yield session
 
     @validate_error
     async def execute_one_or_none(

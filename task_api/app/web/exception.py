@@ -58,7 +58,7 @@ INVALID_PASSWORD = HTTPException(
 )
 
 INVALID_DATA = HTTPException(
-    status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid data for writing"
+    status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid data"
 )
 BD_ERROR_UNIQUE = HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST, detail="Its item already existing"
@@ -74,6 +74,12 @@ DENITE = HTTPException(
     detail="The user has not joined this project.",
 )
 
+CANT_EDIT_YOURSELF = HTTPException(
+    status_code=status.HTTP_403_FORBIDDEN,
+    detail="The user can't, change yourself settings",
+)
+
+
 FORBIDDEN_CANT_USE = HTTPException(
     status_code=status.HTTP_403_FORBIDDEN,
     detail="Cant use this command",
@@ -87,6 +93,11 @@ TASK_NOT_FOUND = HTTPException(
 MEMBER_NOT_FOUND = HTTPException(
     status_code=status.HTTP_404_NOT_FOUND,
     detail="Members not found",
+)
+
+PROJECT_NOT_FOUND = HTTPException(
+    status_code=status.HTTP_404_NOT_FOUND,
+    detail="PROJECT not found",
 )
 
 
