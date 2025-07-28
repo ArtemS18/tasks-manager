@@ -1,0 +1,3 @@
+API для распределения задачь в команде.
+Cтруктура:
+https://miro.com/welcomeonboard/NG9VblFXbUphOCtCa21ka2w3Qy84ZmRDM0FtQlUvT1pLMkVzdDJzaHlmam1mRzhxejhOc0RNclBCWTIwZk40VUVnWWlwUnl5R0VSNVFEZjUwR2dZUWxteWpBQkpKbk0ydy9xUTE5Qnpub1BhalprMXNEZHYzRUNaYUsrbUhwRHp0R2lncW1vRmFBVnlLcVJzTmdFdlNRPT0hdjE=?share_link_id=290801728870
