@@ -1,0 +1,15 @@
+{
+    "python.defaultInterpreterPath": "C:/Users/Артемий/AppData/Local/pypoetry/Cache/virtualenvs/task-api-4bw539EJ-py3.13/Scripts/python.exe",
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.linting.enabled": true,
+    "python.linting.flake8Enabled": false,
+    "python.linting.pylintEnabled": false,
+    "python.linting.ruffEnabled": true,
+    "python.formatting.provider": "black",
+    "editor.formatOnSave": true
+}

@@ -1,62 +1,93 @@
 import logging
-from os import environ
 import os
+import sys
 import typing
+
 if typing.TYPE_CHECKING:
     from app.lib.fastapi import FastAPI
-
-from pydantic_settings import BaseSettings
+from pydantic import BaseModel
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from dotenv import load_dotenv
 
-logger= logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 BASEDIR = "env"
 
-PATHENV = {
-    'test': '.test.env',
-    'dev': '.dev.env',
-    'local': '.local.env'
-}
+PATHENV = {"test": ".test.env", "dev": ".dev.env", "local": ".local.env"}
 
-def get_path(env: str = 'local', base_dir: str = BASEDIR):
-    return base_dir + '/' + PATHENV[env]
+
+def get_path(env: str = "local", base_dir: str = BASEDIR):
+    return base_dir + "/" + PATHENV.get(env, ".dev.env")
+
+
+class WebConig(BaseModel):
+    host: str = "localhost"
+    port: int = 8080
+    workers: int = 1
+    reload: bool = False
+
+
+class InternalConfig(BaseModel):
+    token: str | None = None
+
+
+class DatabaseConfig(BaseModel):
+    url: str
+    echo: bool = False
+
+
+class JwtConfig(BaseModel):
+    access_expire: int
+    secret_key: str
+    refresh_expire: int
+    algorithm: str
+    confirm_expire: int
+
+
+class SmtpConfig(BaseModel):
+    host: str = "localhost"
+    port: int = 1025
+    tls: bool = False
+    remote_connect: bool = False
+    email: str = "root@localhost.com"
+    password: str | None = None
+
+
+class RabbitConfig(BaseModel):
+    url: str
+
+
+class RedisConfig(BaseModel):
+    url: str
+    username: str
+    password: str
+
 
 class BaseConfig(BaseSettings):
-    ENV_TYPE: str
-    DEBUG: bool
-
-    HOST: str
-    PORT: int
-
-    DATABASE_URL: str
-    ECHO: bool
-
-    JWT_EXPIRE_MINUTES: int
-    JWT_SECRET_KEY: str
-    JWT_REFRESH_EXPIRE_HOURS: int
-    JWT_ALGORIM: str
-
-    EMAIL_HOST:str
-    EMAIL_PORT:str
-
-    AIOPIKA_URL: str
-
-    REDIS_URL: str
-    REDIS_USERNAME: str
-    REDIS_PASSWORD: str
-
-    CONFIRM_PASSWORD_EXPIRE_MINUTES: int
-    
-    class Config:
-        env_file = get_path()
+    model_config = SettingsConfigDict(
+        case_sensitive=False,
+        env_file=get_path(),
+        extra="ignore",
+        env_nested_delimiter="__",
+        env_prefix="APP__",
+    )
+    env_type: str = "local"
+    web: WebConig
+    db: DatabaseConfig
+    jwt: JwtConfig
+    smtp: SmtpConfig
+    rabbit: RabbitConfig
+    redis: RedisConfig
+    internal: InternalConfig
 
 
 config: BaseConfig | None = None
 
+
 def setup_config(path: str = None, base_dir: str = BASEDIR) -> BaseConfig:
     global config
 
-    if env_type:=os.environ.get("ENV_TYPE"):
+    if env_type := os.environ.get("ENV_TYPE"):
         path = get_path(env_type, base_dir)
 
     if config is None:
@@ -64,14 +95,20 @@ def setup_config(path: str = None, base_dir: str = BASEDIR) -> BaseConfig:
         env_file = path if path else get_path(base_dir=base_dir)
         logger.info("Config loaded from %s", env_file)
         config = BaseConfig(_env_file=env_file)
+
+    if sys.argv[0] == "worker":
+        config.env_type = "worker"
+
     return config
 
-def get_config(app: "FastAPI"):
+
+def get_app_config(app: "FastAPI"):
     if config is None:
         setup_config()
     app.config = config
 
-def get_current_config() -> BaseConfig:
+
+def get_config() -> BaseConfig:
     if config is None:
         raise RuntimeError("config not created")
     return config

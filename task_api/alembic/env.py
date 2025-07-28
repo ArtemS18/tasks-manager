@@ -6,7 +6,7 @@ from sqlalchemy import Connection, pool
 
 from alembic import context
 from app.base.base_model import Base
-from app.store.bd import models
+from app.store.database import models
 from pathlib import Path
 from app.web.config import setup_config
 
@@ -25,15 +25,16 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
 
+
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-def create_url()-> str:
+def create_url() -> str:
     base_dir = Path(__file__).parent.parent / "env"
     env_path = base_dir / ".local.env"
     print(env_path)
-    url = setup_config(path=str(env_path), base_dir=str(base_dir)).DATABASE_URL
+    url = setup_config(path=str(env_path), base_dir=str(base_dir)).db.url
     print(url)
     return url
 
@@ -50,7 +51,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    #url = config.get_main_option("sqlalchemy.url")
+    # url = config.get_main_option("sqlalchemy.url")
     url = create_url()
     context.configure(
         url=url,
@@ -62,24 +63,24 @@ def run_migrations_offline() -> None:
     with context.begin_transaction():
         context.run_migrations()
 
-def run_migrations(connection: Connection)->None:
-    context.configure(
-        connection=connection, target_metadata=target_metadata
-    )
+
+def run_migrations(connection: Connection) -> None:
+    context.configure(connection=connection, target_metadata=target_metadata)
 
     with context.begin_transaction():
         context.run_migrations()
 
+
 async def run_async_migrations() -> None:
-    
     connectable = create_async_engine(
         url=create_url(),
         poolclass=pool.NullPool,
-    ) 
-    
+    )
+
     async with connectable.connect() as connection:
         await connection.run_sync(run_migrations)
     await connectable.dispose()
+
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode.
@@ -89,7 +90,6 @@ def run_migrations_online() -> None:
 
     """
     asyncio.run(run_async_migrations())
-    
 
 
 if context.is_offline_mode():
