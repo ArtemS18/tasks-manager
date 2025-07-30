@@ -15,7 +15,7 @@ router = APIRouter(
 )
 
 
-@router.get("/tasks/", response_model=None)
+@router.get("/tasks/", response_model=None)  # NOTE: FIX IT
 async def get_tasks(
     service: TaskServiceDepends,
     project_id: int = Query(ge=0),
