@@ -39,7 +39,8 @@ class TaskRepository(PgAccessor):
                 )
             if filters.author_id:
                 query = query.where(Task.author_id == filters.author_id)
-        query = query.limit(filters.limit).offset(filters.offset)
+        if filters:
+            query = query.limit(filters.limit).offset(filters.offset)
         return await self.execute_many(query, List[Task])
 
     async def get_task_full(self, project_id: int, task_id: int) -> Task:

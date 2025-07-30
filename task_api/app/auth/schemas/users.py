@@ -1,4 +1,4 @@
-from pydantic import EmailStr, BaseModel
+from pydantic import EmailStr, BaseModel, Field
 from app.base.base_pydantic import Base
 from app.auth.models.enyms import UserStatus
 
@@ -11,12 +11,13 @@ class UserSchemaResponse(Base):
 
 
 class User(Base):
-    id: int
+    id: int = Field(alias="sub")
     tg_id: int
-    name: str
+    name: str | None = None
     login: str
-    hashed_password: str
-    status: UserStatus
+    hashed_password: str | None = None
+    status: UserStatus | None = None
+    model_config = {"populate_by_name": True}
 
 
 class CreateUserDTO(Base):
@@ -24,3 +25,9 @@ class CreateUserDTO(Base):
     name: str
     login: EmailStr
     password: str
+
+
+class UserTokenPayload(Base):
+    id: int
+    tg_id: int
+    login: str

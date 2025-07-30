@@ -48,6 +48,7 @@ class JwtService:
             raise exception.JWT_BASE_EXEPTION
         except jwt.DecodeError:
             raise exception.JWT_DECODE_ERROR
+        print(payload)
         if not payload.get("sub") or not payload.get("token_type"):
             raise exception.JWT_BAD_CREDENSIALS
         return payload

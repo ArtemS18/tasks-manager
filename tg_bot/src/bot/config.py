@@ -17,7 +17,7 @@ def get_path(env: str = "local", base_dir: str = BASEDIR):
 
 
 class ApiConfig(BaseModel):
-    url: str = "http://localhost:8080"
+    url: str = "http://localhost:8080/"
     token: str
 
 

@@ -8,7 +8,7 @@ from app.auth.depends.services import (
 )
 from app.auth.schemas.token import RefreshTokenRequest
 from app.auth.schemas.auth import ConfirmEmailSchema, UserCredentials
-from app.auth.schemas.users import User
+from app.auth.schemas.users import User, UserTokenPayload
 
 
 oauth2_schema = OAuth2PasswordBearer(tokenUrl="/auth/token")
@@ -40,4 +40,4 @@ async def validation_access_token(
     return user
 
 
-ValidateConfirmToken = Annotated[User, validation_confirm_token]
+ValidateConfirmToken = Annotated[UserCredentials, validation_confirm_token]

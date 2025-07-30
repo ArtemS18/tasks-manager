@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 import logging
 from fastapi import HTTPException
+from pydantic import ValidationError
 from app.auth.schemas.auth import AuthoSchema
 from app.auth.schemas.token import RefreshToken
 from app.store.database.repository.user import UserRepository
@@ -28,16 +29,20 @@ class LoginService:
             if callable(obj) and not name.startswith("__"):
                 setattr(self, name, async_time(obj))
 
+    @staticmethod
+    def _base_payload(user: User) -> dict:
+        return {"sub": str(user.id), "login": user.login, "tg_id": user.tg_id}
+
     async def authentication_user_by_email(self, email: str) -> User:
         orm_user = await self.repository.get_user_by_email(email)
         if orm_user is None:
             raise exception.USER_NOT_FOUND
+        if orm_user.status != UserStatus.active:
+            raise exception.FORBIDDEN
         return User.model_validate(orm_user)
 
     async def authorizition_user(self, form_data: AuthoSchema) -> User:
         user: User = await self.authentication_user_by_email(form_data.username)
-        if user.status != UserStatus.active:
-            raise exception.FORBIDDEN
         if not verify_password(str(form_data.password), str(user.hashed_password)):
             raise exception.INVALID_PASSWORD
         return user
@@ -52,13 +57,15 @@ class LoginService:
         return User.model_validate(orm_user)
 
     async def create_access_token(self, user: User) -> str:
-        payload = {"sub": user.login, "id": user.id, "token_type": "access"}
+        payload = self._base_payload(user)
+        payload.update({"token_type": "access"})
 
         token = self.jwt.create_token(payload)
         return token
 
     async def create_refresh_token(self, user: User) -> str:
-        payload = {"sub": user.login, "id": user.id, "token_type": "refresh"}
+        payload = self._base_payload(user)
+        payload.update({"token_type": "refresh"})
 
         now = datetime.now(timezone.utc)
         expire_at = now + timedelta(minutes=self.config.jwt.refresh_expire)
@@ -70,16 +77,19 @@ class LoginService:
 
     async def base_validation_token(
         self, token: str | None, token_type: str = "access"
-    ):
+    ) -> User:
         if token is None:
             raise exception.JWT_MISSING_TOKEN
 
         payload = self.jwt.verify_token(token)
         if payload.get("token_type") != token_type:
             raise exception.JWT_BAD_CREDENSIALS
-        email = payload.get("sub")
-        user = await self.authentication_user_by_email(email)
-        return user
+        try:
+            print(payload)
+            user = User.model_validate(payload)
+            return user
+        except ValidationError:
+            raise exception.JWT_BAD_CREDENSIALS
 
     async def validation_by_id(
         self, token: str | None, token_type: str = "access"
@@ -96,8 +106,10 @@ class LoginService:
         return id
 
     async def validation_refresh_token(self, refresh_token: str | None):
-        user = await self.base_validation_token(refresh_token, token_type="refresh")
-
+        user_data = await self.base_validation_token(
+            refresh_token, token_type="refresh"
+        )
+        user = await self.authentication_user_by_email(user_data.login)
         orm_token = await self.repository.get_refresh_token(user.id, refresh_token)
 
         if orm_token is None:
