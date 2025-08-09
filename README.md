@@ -12,7 +12,7 @@ API для распределения задачь в команде.
 
 Cтруктура БД и API:
 - Публичные эндпоинты (на момент 09.08.2025)
-- Управления проетами:
+- Управления проектами:
 - <img width="755" height="161" alt="изображение" src="https://github.com/user-attachments/assets/67f97ea1-68ee-427f-b6cd-46f28ebc7221" />
 - Управление участниками проекта:
 - <img width="912" height="460" alt="изображение" src="https://github.com/user-attachments/assets/92cf2ae6-8f98-4ad5-baaa-1e7beee3c94a" />
