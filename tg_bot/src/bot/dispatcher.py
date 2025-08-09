@@ -1,9 +1,9 @@
 import typing
 from aiogram import Dispatcher
 from src.bot.bot import bot
-from src.routers.start import router
+from src.routers.auth import router as auth_router
+from src.routers.menu import router as menu_router
 from src.internal.api.accessor import api
-import logging
 
 if typing.TYPE_CHECKING:
     from aiogram import Bot
@@ -20,7 +20,7 @@ async def on_shutdown(dispatcher: Dispatcher):
 def setup_dispatcher(bot: "Bot") -> Dispatcher:
     dp = Dispatcher()
 
-    dp.include_router(router)
+    dp.include_routers(auth_router, menu_router)
 
     dp.startup.register(on_startup)
     dp.shutdown.register(on_shutdown)
@@ -28,8 +28,10 @@ def setup_dispatcher(bot: "Bot") -> Dispatcher:
 
 
 async def polling(dp: Dispatcher, bot: "Bot"):
-    logging.basicConfig(level="DEBUG")
-    await dp.start_polling(bot)
+    try:
+        await dp.start_polling(bot)
+    except Exception:
+        pass
 
 
 dp = setup_dispatcher(bot)

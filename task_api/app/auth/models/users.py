@@ -19,7 +19,9 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, index=True, primary_key=True)
-    tg_id: Mapped[int] = mapped_column(BigInteger, index=True, unique=True)
+    tg_id: Mapped[int] = mapped_column(
+        BigInteger, index=True, unique=True, nullable=True
+    )
     name: Mapped[str] = mapped_column(VARCHAR(255))
     login: Mapped[str] = mapped_column(VARCHAR(255), unique=True)
     status: Mapped[UserStatus] = mapped_column(

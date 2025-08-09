@@ -1,8 +1,10 @@
-from app.auth.schemas.users import User
 from app.projects.models.enums import MemberRole, MemberStatus
-from app.projects.schemas.members.web import CreateMemberSchema
-from app.projects.schemas.projects.projects import CreateProjectDTO, Project
-from app.projects.schemas.projects.web import ProjectResponseSchema
+from app.projects.schemas import (
+    ProjectResponseSchema,
+    CreateProjectDTO,
+    Project,
+    CreateMemberSchema,
+)
 from app.store.database.repository.members import MemberRepository
 from app.store.database.repository.projects import ProjectRepository
 from app.store.database.repository.user import UserRepository

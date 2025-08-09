@@ -5,6 +5,39 @@ class Api{
     constructor(base_url){
         this.base_url = base_url
     }
+    updateTgId(token, tgId) {
+    return axios.patch(
+        `${this.base_url}/internal/users/me/tg_id`,
+        { 'tg_id': tgId },
+        {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+    ).then((resp) => {
+        console.log(resp);
+        if (resp.statusText == "OK") {
+            return { success: true, ...resp.data };
+        } else {
+            return { success: false, message: "Unexpected response", status: resp.status };
+        }
+    }).catch((e) => {
+        console.log(e);
+        if (e.response) {
+            return {
+                success: false,
+                message: e.response.data || "Server error",
+                status: e.response.status
+            };
+        } else {
+            return {
+                success: false,
+                message: "Network or unknown error",
+                status: null
+            };
+        }
+    });
+}
     fetchAuthoData(username, password){
         return axios.post(
             `${this.base_url}/auth/token`,
@@ -20,7 +53,7 @@ class Api{
                  return {
                     success: false,
                     message: e.response.data || "Server error",
-                    statuse: e.status
+                    status: e.status
                  }
             }
         })
@@ -28,4 +61,4 @@ class Api{
 
 }
 
-export const api = new Api('http://localhost:8082')
+export const api = new Api('http://localhost:8080', )

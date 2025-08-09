@@ -5,9 +5,9 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from app.projects.models.member import Assign
 from app.projects.schemas.filters import BaseFilters, MembersFilters
-from app.projects.schemas.members.dto import UpdateMemberDTO
-from app.projects.schemas.members.web import (
+from app.projects.schemas import (
     CreateMemberSchema,
+    UpdateMemberDTO,
 )
 
 from app.projects.models import Member

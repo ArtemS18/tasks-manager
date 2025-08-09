@@ -5,14 +5,14 @@ from app.auth.models.enyms import UserStatus
 
 class UserSchemaResponse(Base):
     id: int
-    tg_id: int
+    tg_id: int | None
     name: str
     login: EmailStr
 
 
 class User(Base):
     id: int = Field(alias="sub")
-    tg_id: int
+    tg_id: int | None = None
     name: str | None = None
     login: str
     hashed_password: str | None = None
@@ -21,7 +21,7 @@ class User(Base):
 
 
 class CreateUserDTO(Base):
-    tg_id: int
+    tg_id: int | None
     name: str
     login: EmailStr
     password: str
@@ -29,5 +29,5 @@ class CreateUserDTO(Base):
 
 class UserTokenPayload(Base):
     id: int
-    tg_id: int
+    tg_id: int | None
     login: str

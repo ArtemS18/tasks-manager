@@ -32,3 +32,24 @@ class RolePermission(PyEnym):
     update = "update"
     delete = "delete"
     all_permissions = "all_permissions"
+
+
+class UserStatus(PyEnym):
+    active = "active"
+    pending = "pending"
+    blocked = "blocked"
+
+
+PRIORITY_EMOJI = {
+    TaskPriority.low: "🟢",
+    TaskPriority.default: "🔵",
+    TaskPriority.high: "🟠",
+    TaskPriority.very_high: "🔴",
+}
+
+STATUS_BAR = {
+    TaskStatus.created: "Создана",
+    TaskStatus.in_progress: "В процессе выполнения",
+    TaskStatus.pending: "В процессе сдачи",
+    TaskStatus.closed: "Задача выполнена",
+}

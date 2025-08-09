@@ -76,7 +76,7 @@ class PgAccessor(BaseAccessor):
 
     @validate_error
     async def execute_one_or_none(
-        self, query, model: typing.Type[T] = Base, commit=False
+        self, query, model: typing.Type[T] = Base, commit=True
     ) -> typing.Optional[T]:
         obj = await self._execute(query, commit)
         return obj.scalar_one_or_none()

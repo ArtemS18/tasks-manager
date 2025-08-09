@@ -21,6 +21,17 @@ class ApiConfig(BaseModel):
     token: str
 
 
+class SiteConfig(BaseModel):
+    url: str = "http://localhost:5173/"
+
+
+class WebhookConfig(BaseModel):
+    url: str
+    host: str = "localhost"
+    port: int = 80
+    path: str = "webhook"
+
+
 class BaseConfig(BaseSettings):
     model_config = SettingsConfigDict(
         case_sensitive=False,
@@ -31,7 +42,10 @@ class BaseConfig(BaseSettings):
     )
     env_type: str = "local"
     token: str
+    site: SiteConfig
     api: ApiConfig
+    page_limit: int = 5
+    webhook: WebhookConfig
 
 
 config: BaseConfig | None = None

@@ -8,6 +8,7 @@ from app.projects.schemas.filters import (
 from app.projects.schemas.members.dto import Member
 from app.projects.schemas.tasks.dto import CreateTaskDTO, Task, UpdateTaskDTO
 from app.projects.schemas.tasks.web import (
+    BaseTaskResponseSchema,
     TasksResponseSchema,
     TaskResponseSchema,
 )
@@ -34,7 +35,7 @@ class TaskService:
     async def get_tasks(
         self, project_id: int, filters: TaskFilters
     ) -> TasksResponseSchema:
-        tasks_orm = await self.task_repo.get_full_tasks(project_id, filters)
+        tasks_orm = await self.task_repo.get_tasks_by_project_id(project_id, filters)
         if tasks_orm == []:
             raise exception.TASK_NOT_FOUND
         return TasksResponseSchema(
@@ -42,13 +43,19 @@ class TaskService:
         )
 
     async def get_task(self, project_id: int, task_id: int, filtres=None) -> Task:
-        task_orm = await self.task_repo.get_task(project_id, task_id, filtres)
+        task_orm = await self.task_repo.get_task_by_id(
+            task_id, project_id, filtres, load_options=False
+        )
         return Task.model_validate(task_orm)
+
+    async def get_task_by_id(self, task_id: int) -> TaskResponseSchema:
+        task_orm = await self.task_repo.get_task_by_id(task_id)
+        return TaskResponseSchema.orm_task_validate(task_orm)
 
     async def validate_author_task(
         self, project_id: int, task_id: int, member_id: int
     ) -> Task:
-        task_orm = await self.task_repo.get_task(project_id, task_id)
+        task_orm = await self.task_repo.get_task_by_id(task_id, project_id)
         if task_orm is None:
             raise exception.TASK_NOT_FOUND
         if task_orm.author_id != member_id:
@@ -60,10 +67,13 @@ class TaskService:
         return TaskResponseSchema.orm_task_validate(task_orm)
 
     async def update_task(
-        self, project_id: int, task_id: int, update_task: UpdateTaskDTO
-    ) -> Task:
-        task_orm = await self.task_repo.update_task(project_id, task_id, update_task)
-        return Task.model_validate(task_orm)
+        self,
+        task_id: int,
+        update_task: UpdateTaskDTO,
+        project_id: int | None = None,
+    ) -> BaseTaskResponseSchema:
+        task_orm = await self.task_repo.update_task(task_id, update_task, project_id)
+        return BaseTaskResponseSchema.orm_task_validate(task_orm)
 
     async def delete_task(self, project_id: int, task_id: int) -> Task:
         task_orm = await self.task_repo.delete_task(project_id, task_id)
@@ -98,7 +108,7 @@ class TaskService:
         project_id: int,
         task_id: int,
     ) -> TaskResponseSchema:
-        orm_task = await self.task_repo.get_task_full(project_id, task_id)
+        orm_task = await self.task_repo.get_task_by_id(task_id, project_id)
         if orm_task is None:
             raise exception.TASK_NOT_FOUND
         return TaskResponseSchema.orm_task_validate(orm_task)

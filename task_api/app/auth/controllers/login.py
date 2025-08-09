@@ -31,7 +31,7 @@ class LoginService:
 
     @staticmethod
     def _base_payload(user: User) -> dict:
-        return {"sub": str(user.id), "login": user.login, "tg_id": user.tg_id}
+        return {"sub": str(user.id), "login": user.login}
 
     async def authentication_user_by_email(self, email: str) -> User:
         orm_user = await self.repository.get_user_by_email(email)
@@ -80,12 +80,12 @@ class LoginService:
     ) -> User:
         if token is None:
             raise exception.JWT_MISSING_TOKEN
+        logger.info("token: %s", token)
 
         payload = self.jwt.verify_token(token)
         if payload.get("token_type") != token_type:
             raise exception.JWT_BAD_CREDENSIALS
         try:
-            print(payload)
             user = User.model_validate(payload)
             return user
         except ValidationError:
