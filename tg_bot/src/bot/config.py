@@ -17,8 +17,19 @@ def get_path(env: str = "local", base_dir: str = BASEDIR):
 
 
 class ApiConfig(BaseModel):
-    url: str = "http://localhost:8080"
+    url: str = "http://localhost:8080/"
     token: str
+
+
+class SiteConfig(BaseModel):
+    url: str = "http://localhost:5173/"
+
+
+class WebhookConfig(BaseModel):
+    url: str
+    host: str = "localhost"
+    port: int = 80
+    path: str = "webhook"
 
 
 class BaseConfig(BaseSettings):
@@ -31,7 +42,10 @@ class BaseConfig(BaseSettings):
     )
     env_type: str = "local"
     token: str
+    site: SiteConfig
     api: ApiConfig
+    page_limit: int = 5
+    webhook: WebhookConfig
 
 
 config: BaseConfig | None = None

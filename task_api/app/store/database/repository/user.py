@@ -35,6 +35,10 @@ class UserRepository(PgAccessor):
         query = select(User).where(User.id == user_id)
         return await self.execute_one(query, User)
 
+    async def get_user_by_tg_id(self, tg_id: int) -> User:
+        query = select(User).where(User.tg_id == tg_id)
+        return await self.execute_one(query, User)
+
     async def create_user(self, new_user: CreateUserDTO) -> User:
         query = (
             insert(User)

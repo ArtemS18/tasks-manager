@@ -8,3 +8,6 @@ class CreateAssignedSchema(Base):
 class AssignedResponseSchema(Base):  # TODO: сделать нормальный респонс
     task_id: int
     member_id: int
+
+
+__all__ = ["CreateAssignedSchema", "AssignedResponseSchema"]

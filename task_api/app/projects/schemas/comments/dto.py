@@ -15,3 +15,6 @@ class Comments(Base):
 
 class CreateCommentDTO(Base):
     text: str
+
+
+__all__ = ["Comment", "Comments", "CreateCommentDTO"]

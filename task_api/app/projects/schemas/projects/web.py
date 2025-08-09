@@ -28,3 +28,6 @@ class ProjectResponseSchema(Base):
             members=members,
             created_at=project_orm.created_at,
         )
+
+
+__all__ = ["ProjectResponseSchema"]

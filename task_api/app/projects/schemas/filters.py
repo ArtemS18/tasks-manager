@@ -14,6 +14,16 @@ class TaskFilters(BaseFilters):
     assigned_id: List[int] | None = None
 
 
+class ProjectFilters(BaseFilters):
+    is_my: bool | None = None
+
+
+class TaskCurrentUserFilters(BaseFilters):
+    is_author: bool = True
+    is_assigned: bool = True
+    project_id: int | None = None
+
+
 class CommentsFilters(BaseFilters):
     author_id: int | None = Field(default=None, ge=0)
 

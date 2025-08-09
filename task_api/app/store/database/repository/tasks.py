@@ -1,13 +1,19 @@
 from typing import List
 from sqlalchemy import delete, insert, select, update, exists
+from app.auth.models.users import User
 from app.projects.models.project import Project
 from app.projects.schemas.comments.dto import CreateCommentDTO
-from app.projects.schemas.filters import BaseFilters, CommentsFilters, TaskFilters
+from app.projects.schemas.filters import (
+    BaseFilters,
+    CommentsFilters,
+    TaskCurrentUserFilters,
+    TaskFilters,
+)
 from sqlalchemy.orm import selectinload
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from app.projects.models import Task, Comment, Member, Assign
 from app.projects.schemas.tasks.dto import CreateTaskDTO, UpdateTaskDTO
-from app.store.database.accessor import PgAccessor, validate_error
+from app.store.database.accessor import PgAccessor
 from app.store.database.repository import query_filters
 from app.web import exception
 
@@ -28,33 +34,33 @@ class TaskRepository(PgAccessor):
         res: bool = await self.execute_one(query, commit=False)
         return res
 
-    async def get_full_tasks(
+    async def get_tasks_by_project_id(
         self, project_id: int, filters: TaskFilters | None = None
     ) -> List[Task]:
         query = select(Task).where(Task.project_id == project_id).options(*task_options)
         if filters:
-            if filters.assigned_id:
-                query = query.join(Assign, Assign.task_id == Task.id).where(
-                    Assign.id.in_(filters.assigned_id)
-                )
-            if filters.author_id:
-                query = query.where(Task.author_id == filters.author_id)
-        query = query.limit(filters.limit).offset(filters.offset)
+            query = query_filters.add_tasks_filters(query, filters)
         return await self.execute_many(query, List[Task])
 
-    async def get_task_full(self, project_id: int, task_id: int) -> Task:
-        query = (
-            select(Task)
-            .where((Task.id == task_id) & (Task.project_id == project_id))
-            .options(*task_options)
-        )
+    async def get_task_by_id(
+        self, task_id: int, project_id: int | None = None, load_options: bool = True
+    ) -> Task:
+        query = select(Task).where((Task.id == task_id))
+        if project_id is not None:
+            query = query.where(Task.project_id == project_id)
+        if load_options:
+            query = query.options(*task_options)
         return await self.execute_one_or_none(query, Task)
 
-    async def get_task(self, project_id: int, task_id: int, filters=None) -> Task:
-        query = select(Task).where(
-            (Task.id == task_id) & (Task.project_id == project_id)
-        )
-        return await self.execute_one(query, Task)
+    async def get_tasks_by_tg_id(
+        self, tg_id: int, filters: TaskCurrentUserFilters, load_options: bool = True
+    ) -> List[Task]:
+        query = select(Task)
+        if load_options:
+            query = query.options(*task_options)
+        if filters:
+            query = query_filters.add_tasks_current_user_filters(query, filters, tg_id)
+        return await self.execute_many(query, List[Task])
 
     async def get_author_from_task(self, project_id: int, task_id: int) -> Member:
         query = (
@@ -141,10 +147,13 @@ class TaskRepository(PgAccessor):
             await self.create_assigns_from_task(
                 create_task.project_id, new_task.id, create_task.assigned_id
             )
-        return await self.get_task_full(create_task.project_id, new_task.id)
+        return await self.get_task_by_id(create_task.project_id, new_task.id)
 
     async def update_task(
-        self, project_id: int, task_id: int, update_task_data: UpdateTaskDTO
+        self,
+        task_id: int,
+        update_task_data: UpdateTaskDTO,
+        project_id: int | None = None,
     ) -> Task:
         if update_task_data.assigned_id is not None:
             await self.delete_assigned(task_id, update_task_data.assigned_id)
@@ -156,19 +165,17 @@ class TaskRepository(PgAccessor):
             if v is not None and k != "assigned_id"
         }
         if update_values != {}:
-            query = (
-                update(Task)
-                .values(**update_values)
-                .where((Task.id == task_id) & (Task.project_id == project_id))
-                .returning(Task)
-                .options(*task_options)
-            )
+            query = update(Task).values(**update_values).where((Task.id == task_id))
+            if project_id is not None:
+                query = query.where(Task.project_id == project_id)
+
+            query = query.returning(Task).options(*task_options)
             updated_task = await self.execute_one_or_none(query, Task, commit=True)
             if updated_task is None:
                 raise exception.TASK_NOT_FOUND
             return updated_task
 
-        return await self.get_task(project_id, task_id)
+        return await self.get_task_by_id(project_id, task_id)
 
     async def delete_task(
         self,
@@ -180,7 +187,7 @@ class TaskRepository(PgAccessor):
             .where((Task.id == task_id) & (Task.project_id == project_id))
             .returning(Task)
         )
-        deleted_task = await self.execute_one_or_none(query, Task)
+        deleted_task = await self.execute_one_or_none(query, Task, commit=True)
         if deleted_task is None:
             raise exception.TASK_NOT_FOUND
         return deleted_task

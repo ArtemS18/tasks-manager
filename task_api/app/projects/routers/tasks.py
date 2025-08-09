@@ -26,6 +26,7 @@ from app.projects.schemas.members.web import (
 )
 from app.projects.schemas.tasks.dto import CreateTaskDTO, Task, UpdateTaskDTO
 from app.projects.schemas.tasks.web import (
+    BaseTaskResponseSchema,
     CreateTaskSchema,
     TaskResponseSchema,
     TasksResponseSchema,
@@ -79,8 +80,8 @@ async def update_task(
     service: TaskServiceDepends,
     task_data: UpdateTaskDTO,
     project_id: ProjectId,
-) -> Task:
-    task = await service.update_task(project_id, task_id, task_data)
+) -> BaseTaskResponseSchema:
+    task = await service.update_task(task_id, task_data, project_id)
     return task
 
 

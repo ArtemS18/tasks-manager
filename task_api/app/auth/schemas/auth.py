@@ -12,7 +12,7 @@ class AuthoSchema(BaseModel):
 class RegisterSchema(Base):
     login: EmailStr
     password: str = Field(max_length=63, min_length=8)
-    tg_id: int
+    tg_id: int | None = None
     name: str
 
 

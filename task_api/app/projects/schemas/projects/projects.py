@@ -8,8 +8,15 @@ class Project(Base):
     owner_id: int
 
 
+class Projects(Base):
+    projects: list[Project]
+
+
 class CreateProjectDTO(BaseProject): ...
 
 
 class CreateProjectRequest(Base):
     name: str
+
+
+__all__ = ["Project", "CreateProjectDTO", "CreateProjectRequest", "Projects"]

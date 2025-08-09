@@ -28,3 +28,6 @@ class UpdateTaskDTO(Base):
     priority: TaskPriority | None = None
     status: TaskStatus | None = None
     deadline: datetime | None = None
+
+
+__all__ = ["Task", "Tasks", "CreateTaskDTO", "UpdateTaskDTO"]

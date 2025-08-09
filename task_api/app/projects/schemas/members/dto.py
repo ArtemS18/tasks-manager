@@ -15,3 +15,6 @@ class UpdateMemberDTO(Base):
     project_id: int | None = None
     role: MemberRole | None = None
     status: MemberStatus | None = None
+
+
+__all__ = ["Member", "UpdateMemberDTO"]

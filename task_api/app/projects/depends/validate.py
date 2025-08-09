@@ -23,8 +23,8 @@ async def validate_user_in_project(
     login: LoginServiceDepends,
     project_id: int = Path(...),
 ) -> Member:
-    user_id = await login.validation_by_id(access_token)
-    member = await project_service.validate_user(project_id, user_id)
+    user = await login.validation_access_token(access_token)
+    member = await project_service.validate_user(project_id, user.id)
     return member
 
 

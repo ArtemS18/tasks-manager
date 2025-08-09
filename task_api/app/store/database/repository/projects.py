@@ -4,8 +4,11 @@ from app.auth.models.users import User
 from app.projects.models.enums import MemberRole
 from app.projects.models.member import Member
 from app.projects.models.project import Project
+from app.projects.schemas.filters import ProjectFilters
 from app.projects.schemas.projects.projects import CreateProjectDTO
 from app.store.database.accessor import PgAccessor
+from app.store.database.repository import query_filters
+from app.web import exception
 
 
 class ProjectRepository(PgAccessor):
@@ -24,6 +27,20 @@ class ProjectRepository(PgAccessor):
             )
         )
         res = await self.execute_one_or_none(query, Project)
+        return res
+
+    async def get_projects_by_tg_id(
+        self, tg_id: int, filters: ProjectFilters | None = None
+    ) -> list[Project]:
+        query = (
+            select(Project)
+            .join(Member, Member.project_id == Project.id)
+            .join(User, User.id == Member.user_id)
+            .where(User.tg_id == tg_id)
+        )
+        if filters:
+            query = query_filters.add_project_filters(query, filters)
+        res = await self.execute_many(query, list[Project])
         return res
 
     async def get_project_by_id_f(self, project_id: int) -> Project:

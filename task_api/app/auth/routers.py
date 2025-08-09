@@ -20,7 +20,7 @@ from app.auth.schemas.token import (
     ConfirmTokenResponse,
     TokenResponse,
 )
-from app.auth.schemas.users import UserSchemaResponse, User
+from app.auth.schemas.users import UserSchemaResponse, User, UserTokenPayload
 from app.lib.shemas import OKResponseSchema
 from app.lib.utils import set_cookie
 

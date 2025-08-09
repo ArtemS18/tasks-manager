@@ -23,3 +23,6 @@ class CommentResponseSchema(Base):
 
 class CommentsResponseSchema(Base):
     comments: List[CommentResponseSchema]
+
+
+__all__ = ["CommentResponseSchema", "CommentsResponseSchema"]
