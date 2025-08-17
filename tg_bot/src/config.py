@@ -32,6 +32,12 @@ class WebhookConfig(BaseModel):
     path: str = "webhook"
 
 
+class RedisCondig(BaseModel):
+    url: str = "redis://localhost:6379/1"
+    username: str
+    password: str
+
+
 class BaseConfig(BaseSettings):
     model_config = SettingsConfigDict(
         case_sensitive=False,
@@ -46,6 +52,7 @@ class BaseConfig(BaseSettings):
     api: ApiConfig
     page_limit: int = 5
     webhook: WebhookConfig
+    redis: RedisCondig
 
 
 config: BaseConfig | None = None

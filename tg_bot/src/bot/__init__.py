@@ -1,7 +1,7 @@
 import logging
 from aiogram import Bot
 
-from src.bot.config import config
+from src.config import config
 
 _bot: Bot | None = None
 

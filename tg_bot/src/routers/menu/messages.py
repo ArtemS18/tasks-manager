@@ -2,7 +2,7 @@ from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
 
-from src.models.states import UserBrowse
+from src.bot.models.states import UserBrowse
 from src.keyboards.menu import inline_menu_kd
 from aiogram.fsm.context import FSMContext
 

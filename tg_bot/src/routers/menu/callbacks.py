@@ -6,16 +6,15 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
 from aiogram import F
 
-from src.models.dto import MessageDTO
+from src.internal.api.models.dto import MessageDTO
 from src.services import projects, tasks
-from src.models.states import UserBrowse
-from src.bot.config import config
+from src.bot.models.states import UserBrowse
 from src.keyboards.menu import (
     get_tasks_in_project_kb,
     get_back_btn,
     get_assigns_keyboard,
 )
-from src.models.callbacks import (
+from src.bot.models.callbacks import (
     PageCallback,
     ProjectCallback,
     TaskCallback,
@@ -24,23 +23,14 @@ from src.models.callbacks import (
 )
 from src.internal.api.accessor import api
 from src.services.utils import to_state_form
-from src.models.filters import BaseFilters, ProjectFilters, TaskFilters
+from src.internal.api.models.filters import BaseFilters, ProjectFilters, TaskFilters
 from src.keyboards.menu import inline_menu_kd
+from src.services import const
 
 
 router = Router()
 
 log = logging.getLogger(__name__)
-
-
-# STATES_DATA = {
-#     UserBrowse.my_projects.state :{
-#         "filters": ProjectFilters(limit=config.page_limit), "fetch": get_projects
-#     },
-#     UserBrowse.my_tasks_assign: {
-#         "filters": TaskFilters(offset=0, limit=config.page_limit, project_id=project_id), "fetch": get_tasks
-#     }
-# }
 
 
 @router.callback_query(TasksMenuCallback.filter())
@@ -51,7 +41,7 @@ async def handel_tasks(callback: CallbackQuery, state: FSMContext):
 
 
 @router.callback_query(TaskCallback.filter())
-async def handel_task(
+async def handel_task_details(
     callback: CallbackQuery, callback_data: TaskCallback, state: FSMContext
 ):
     msg = await tasks.get_task_details(callback_data.id, state)
@@ -65,7 +55,6 @@ async def handel_task(
 async def handle_page(
     callback: CallbackQuery, callback_data: PageCallback, state: FSMContext
 ):
-    await callback.answer("GoD!")
     data = await state.get_data()
     current_state = to_state_form(callback_data.state)
     log.info(f"State {current_state}")
@@ -77,16 +66,17 @@ async def handle_page(
         await callback.answer("Not found")
         return
     await state.set_state(current_state)
-    filters: BaseFilters = state_data.get("filters")
-    fetch: Callable = state_data.get("fetch")
+    filters: dict = state_data.get("filters")
+    fetch: Callable = const.HANDEL_PAGE_CALLBACKS[state_data.get("fetch")]
 
-    filters.offset = callback_data.offset
+    filters["offset"] = callback_data.offset
     page = callback_data.page
 
     msg: MessageDTO = await fetch(
-        callback=callback, filters=filters, page=page, state=current_state
+        callback=callback, _filters=filters, page=page, state=state
     )
     await callback.message.edit_text(text=msg.text, reply_markup=msg.reply_markup)
+    await callback.answer("GoD!")
 
 
 @router.callback_query(lambda c: c.data == "my-projects")

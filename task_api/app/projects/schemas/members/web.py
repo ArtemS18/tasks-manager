@@ -1,6 +1,8 @@
 from datetime import datetime
+import logging
 from typing import List, Optional
 import typing
+import warnings
 from pydantic import EmailStr, Field
 from app.base.base_pydantic import Base
 from app.projects.models.enums import MemberRole, MemberStatus
@@ -11,6 +13,8 @@ from app.projects.schemas.members.base import BeseMember
 if typing.TYPE_CHECKING:
     from app.projects.schemas.tasks.dto import Tasks
 
+log = logging.getLogger(__name__)
+
 
 class ShortMemberResponse(Base):
     member_id: int
@@ -20,6 +24,7 @@ class ShortMemberResponse(Base):
 
     @classmethod
     def orm_member_validate(cls, orm_member: MemberORM) -> "MemberResponse":
+        log.info(orm_member.to_dict())
         return cls(
             member_id=orm_member.id,
             name=orm_member.user.name,

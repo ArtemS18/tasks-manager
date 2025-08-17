@@ -1,21 +1,23 @@
 from aiogram.types import CallbackQuery
-from src.models.dto import MessageDTO
-from src.models.states import UserBrowse
-from src.models.filters import ProjectFilters
-from src.bot.config import config
+from src.internal.api.models.dto import MessageDTO
+from src.bot.models.states import UserBrowse
+from src.internal.api.models.filters import ProjectFilters
+from src.config import config
 from src.keyboards.menu import (
     get_back_btn,
     get_projects_keyboards,
     get_page_keyboard,
 )
 from aiogram.fsm.context import FSMContext
-from src.models.tasks import Projects
+from src.internal.api.models.tasks import Projects
 from src.internal.api.accessor import api
 
 
 async def get_project_page(
-    callback: CallbackQuery, filters: ProjectFilters, page: int, state: str
+    callback: CallbackQuery, _filters: dict, page: int, state: FSMContext
 ):
+    state = await state.get_state()
+    filters = ProjectFilters(**_filters)
     resp = await api.fetch_projects(callback.from_user.id, filters)
 
     back_builder = get_back_btn(back_callback_data="my-menu")
@@ -47,13 +49,17 @@ async def get_first_project_page(callback: CallbackQuery, state: FSMContext):
     current_state = UserBrowse.my_projects
 
     await state.set_state(current_state)
-    state_data = {current_state.state: {"filters": filters, "fetch": get_project_page}}
-    await state.update_data(**state_data)
+    data = await state.get_data()
+    state_data: dict = data.get(current_state.state, {})
+    state_data.update({"filters": filters.model_dump(), "fetch": "get_project_page"})
+    dt = {current_state.state: state_data}
+
+    await state.update_data(**dt)
 
     project_page = await get_project_page(
         callback,
-        ProjectFilters(limit=config.page_limit),
+        ProjectFilters(limit=config.page_limit).model_dump(),
         page=1,
-        state=current_state.state,
+        state=state,
     )
     return project_page

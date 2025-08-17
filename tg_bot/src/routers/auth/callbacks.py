@@ -1,6 +1,6 @@
 from aiogram import Router
 from aiogram.types import CallbackQuery
-from src.models.user import User
+from src.internal.api.models.user import User
 
 from src.internal.api.accessor import api
 

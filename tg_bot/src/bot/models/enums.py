@@ -41,15 +41,15 @@ class UserStatus(PyEnym):
 
 
 PRIORITY_EMOJI = {
-    TaskPriority.low: "🟢",
-    TaskPriority.default: "🔵",
-    TaskPriority.high: "🟠",
-    TaskPriority.very_high: "🔴",
+    TaskPriority.low.value: "🟢",
+    TaskPriority.default.value: "🔵",
+    TaskPriority.high.value: "🟠",
+    TaskPriority.very_high.value: "🔴",
 }
 
 STATUS_BAR = {
-    TaskStatus.created: "Создана",
-    TaskStatus.in_progress: "В процессе выполнения",
-    TaskStatus.pending: "В процессе сдачи",
-    TaskStatus.closed: "Задача выполнена",
+    TaskStatus.created.value: "Создана",
+    TaskStatus.in_progress.value: "В процессе выполнения",
+    TaskStatus.pending.value: "В процессе сдачи",
+    TaskStatus.closed.value: "Задача выполнена",
 }

@@ -1,14 +1,13 @@
 import logging
-from typing import Any, AsyncGenerator, Generator
-from asgi_lifespan import LifespanManager
+
+from app.auth.models.enyms import UserStatus
 from app.auth.models.users import User
 from app.lib.fastapi import FastAPI
+from random import randint
 import pytest_asyncio
-from httpx import ASGITransport, AsyncClient
 import pytest
 
-from app.projects.models.project import Project
-from app.projects.schemas.members.dto import Member
+from app.projects.models import Project, Member
 from app.web.config import BaseConfig, setup_config
 
 loggeer = logging.getLogger(__name__)
@@ -43,8 +42,13 @@ async def test_app(config: BaseConfig) -> FastAPI:
 async def create_user(test_app: FastAPI, setup_schema):
     from app.auth.schemas.users import CreateUserDTO
 
+    id_ = randint(0, 100000)
+
     create_user = CreateUserDTO(
-        tg_id=10000, name="name1", login="login@gmail.com", password="123456789"
+        tg_id=id_,
+        name=f"user{id_}",
+        login=f"login{id_}@gmail.com",
+        password="123456789",
     )
     user = await test_app.store.repo.user.get_user_by_email(create_user.login)
 
@@ -60,7 +64,9 @@ async def create_user(test_app: FastAPI, setup_schema):
 async def create_project(test_app: FastAPI, create_user: User):
     from app.projects.schemas.projects.projects import CreateProjectDTO
 
-    create_project = CreateProjectDTO(name="project1", owner_id=create_user.id)
+    id_ = randint(0, 100000)
+
+    create_project = CreateProjectDTO(name=f"project{id_}", owner_id=create_user.id)
     project = await test_app.store.repo.project.create_project(create_project)
     return project
 
@@ -78,7 +84,7 @@ async def create_member(test_app: FastAPI, create_user: User, create_project: Pr
 
 @pytest_asyncio.fixture(scope="function")
 async def create_task(test_app: FastAPI, create_member: Member):
-    from app.projects.schemas.tasks.web import CreateTaskDTO
+    from app.projects.schemas.tasks.dto import CreateTaskDTO
 
     create_task = CreateTaskDTO(
         text="Task1",
@@ -87,3 +93,60 @@ async def create_task(test_app: FastAPI, create_member: Member):
     )
     task = await test_app.store.repo.task.create_task(create_task)
     return task
+
+
+@pytest_asyncio.fixture(scope="function")
+async def project_mock():
+    from app.store.database import models
+
+    user = models.User(
+        id=1,
+        name="User",
+        tg_id=10000,
+        login="user@gmail.com",
+        status=UserStatus.active,
+        hashed_password="11111",
+    )
+
+    project = models.Project(id=1, name="Project", owner_id=1)
+    project.owner = user
+
+    return project
+
+
+@pytest_asyncio.fixture(scope="function")
+async def member_mock(project_mock: Project):
+    from app.store.database import models
+
+    user_mock = models.User(
+        id=1,
+        name="User",
+        tg_id=10000,
+        login="user@gmail.com",
+        status=UserStatus.active,
+        hashed_password="11111",
+    )
+
+    member = models.Member(
+        id=1,
+        project_id=project_mock.id,
+        user_id=user_mock.id,
+        project=project_mock,
+        user=user_mock,
+    )
+
+    return member
+
+
+@pytest_asyncio.fixture(scope="function")
+async def task_mock(project_mock: Project, member_mock: Member):
+    from app.store.database import models
+
+    return models.Task(
+        id=1,
+        text="Task",
+        project_id=project_mock.id,
+        author_id=member_mock.id,
+        project=project_mock,
+        author=member_mock,
+    )

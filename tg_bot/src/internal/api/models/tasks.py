@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List
 
-from .enums import TaskPriority, TaskStatus
+from src.bot.models.enums import TaskPriority, TaskStatus
 from .members import ShortMemberResponse
 from .base import Base
 
