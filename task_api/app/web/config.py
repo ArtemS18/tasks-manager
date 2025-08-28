@@ -99,6 +99,8 @@ def setup_config(path: str = None, base_dir: str = BASEDIR) -> BaseConfig:
     if sys.argv[0] == "worker":
         config.env_type = "worker"
 
+    os.environ.update({"ENV_TYPE": config.env_type})
+
     return config
 
 

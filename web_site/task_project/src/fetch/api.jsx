@@ -59,6 +59,48 @@ class Api{
         })
     }
 
+    fetchRegData(name, password, login){
+        return axios.post(
+            `${this.base_url}/auth/reg`,
+            { name, password, login},
+            { headers: { 'Content-Type': 'application/json' } }
+        ).then((resp) => {
+            if (resp.status == 200){
+                return {success: true, ...resp.data}
+            }
+        }).catch((e)=> {
+            console.log(e.response)
+            if (e.response){
+                 return {
+                    success: false,
+                    message: e.response.data || "Server error",
+                    status: e.status
+                 }
+            }
+        })
+    }
+
+    fetchConfirmData(confirm_token, password){
+        return axios.post(
+            `${this.base_url}/auth/confirm`,
+            { confirm_token, password},
+            { headers: { 'Content-Type': 'application/json' } }
+        ).then((resp) => {
+            if (resp.status == 200){
+                return {success: true, ...resp.data}
+            }
+        }).catch((e)=> {
+            console.log(e.response)
+            if (e.response){
+                 return {
+                    success: false,
+                    message: e.response.data || "Server error",
+                    status: e.status
+                 }
+            }
+        })
+    }
+
 }
 
 export const api = new Api('http://localhost:8080', )

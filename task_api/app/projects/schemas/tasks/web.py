@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 from typing import List
 
 from app.base.base_pydantic import Base
@@ -8,6 +9,8 @@ from app.projects.schemas.comments.dto import Comment
 from app.projects.schemas.members.web import ShortMemberResponse
 from app.projects.schemas.projects import Project
 from app.projects.schemas.tasks.base import BaseTask
+
+log = logging.getLogger(__name__)
 
 
 class CreateTaskSchema(BaseTask):
@@ -29,6 +32,7 @@ class BaseTaskResponseSchema(Base):
     def orm_task_validate(
         cls: "BaseTaskResponseSchema", orm_task: TaskORM
     ) -> "BaseTaskResponseSchema":
+        log.info(orm_task)
         author = ShortMemberResponse.orm_member_validate(orm_task.author)
         assigns = [
             ShortMemberResponse.orm_member_validate(obj)
@@ -59,6 +63,7 @@ class TaskResponseSchema(Base):
     def orm_task_validate(
         cls: "TaskResponseSchema", orm_task: TaskORM
     ) -> "TaskResponseSchema":
+        log.info(orm_task)
         author = ShortMemberResponse.orm_member_validate(orm_task.author)
         assigns = [
             ShortMemberResponse.orm_member_validate(obj)

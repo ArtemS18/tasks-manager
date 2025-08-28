@@ -1,11 +1,16 @@
 import logging
 from aiohttp import ClientSession
 
-from src.models.filters import ProjectFilters, TaskFilters
-from src.models.base import Response
-from src.models.user import User
-from src.bot.config import config
-from src.models.tasks import Projects, TaskResponseSchema, Tasks, TasksResponseSchema
+from src.internal.api.models.filters import ProjectFilters, TaskFilters
+from src.internal.api.models.base import Response
+from src.internal.api.models.user import User
+from src.config import config
+from src.internal.api.models.tasks import (
+    Projects,
+    TaskResponseSchema,
+    Tasks,
+    TasksResponseSchema,
+)
 
 log = logging.getLogger(__name__)
 

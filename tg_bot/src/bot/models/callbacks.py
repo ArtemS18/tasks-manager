@@ -1,7 +1,7 @@
 from typing import Literal
 from aiogram.filters.callback_data import CallbackData
 
-from src.models.states import UserBrowse
+from src.bot.models.states import UserBrowse
 
 
 class PageCallback(CallbackData, prefix="page"):

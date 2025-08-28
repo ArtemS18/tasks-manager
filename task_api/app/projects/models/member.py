@@ -17,7 +17,10 @@ class Member(Base):
 
     id: Mapped[int] = mapped_column(Integer, index=True, primary_key=True)
     user_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id"), nullable=False, index=True
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     project_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("projects.id"), nullable=False, index=True

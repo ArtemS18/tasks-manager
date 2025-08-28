@@ -1,6 +1,6 @@
 from pydantic import EmailStr
 from .base import Base
-from .enums import UserStatus
+from src.bot.models.enums import UserStatus
 
 
 class User(Base):

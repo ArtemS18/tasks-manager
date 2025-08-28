@@ -1,7 +1,7 @@
 from aiogram import Router
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message
-from src.bot.config import config
+from src.config import config
 from src.keyboards.autho import inline_auth_kb
 
 router = Router()

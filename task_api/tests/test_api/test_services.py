@@ -1,31 +1,33 @@
-import asyncio
-from typing import Annotated
+import pytest
 from app.auth.models.users import User
 from app.lib.fastapi import FastAPI
-import pytest
-from httpx import AsyncClient, Cookies
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
-from app.projects.models.member import Member
-from app.projects.models.project import Project
-from app.projects.schemas.tasks.dto import Task
+from app.projects.models import Member, Project, Task
 
 
 @pytest.mark.asyncio
-async def test_create_task_service(test_app: FastAPI, create_member: Member):
+async def test_create_task_service(task_mock, member_mock: Member):
     from app.projects.services.task import TaskService
-    from app.projects.schemas.tasks.web import Task, CreateTaskDTO
+    from app.projects.schemas.tasks.dto import CreateTaskDTO
+    from app.projects.schemas import TaskResponseSchema
+
+    task_repo = MagicMock()
+    task_repo.create_task = AsyncMock()
+    task_repo.create_task.return_value = task_mock
 
     data = CreateTaskDTO(
         text="Task1",
-        author_id=create_member.user_id,
+        author_id=member_mock.user_id,
         assigned_id=None,
-        project_id=create_member.project_id,
+        project_id=member_mock.project_id,
     )
 
-    task_service = TaskService(test_app.store.repo.task, test_app.store.repo.member)
+    task_service = TaskService(task_repo, MagicMock())
 
-    assert await task_service.create_task(data) == Task(id=1, **data.model_dump())
+    assert await task_service.create_task(data) == TaskResponseSchema(
+        id=1, **data.model_dump()
+    )
 
 
 @pytest.mark.asyncio

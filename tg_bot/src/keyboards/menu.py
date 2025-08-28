@@ -2,10 +2,10 @@ from typing import Any, Literal
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from src.services.utils import to_callback_form
-from src.models.enums import PRIORITY_EMOJI
-from src.bot.config import config
-from src.models.tasks import Project, TaskResponseSchema
-from src.models import callbacks
+from src.bot.models.enums import PRIORITY_EMOJI
+from src.config import config
+from src.internal.api.models.tasks import Project, TaskResponseSchema
+from src.bot.models import callbacks
 
 inline_menu_kd = InlineKeyboardMarkup(
     inline_keyboard=[
