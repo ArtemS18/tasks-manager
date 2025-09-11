@@ -13,6 +13,8 @@ def jwt_service(req: Request) -> JwtService:
 
 
 def login_service(req: Request, auth=Depends(jwt_service)):
+    print(vars(req.app.store.repo.user))
+    print(req.app.store.repo.user.get_user_by_email)
     return LoginService(
         config=req.app.config, repository=req.app.store.repo.user, jwt=auth
     )

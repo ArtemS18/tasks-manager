@@ -38,11 +38,6 @@ def validate_error(func):
 
 
 class PgAccessor(BaseAccessor):
-    def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
-        for name, obj in cls.__dict__.items():
-            if callable(obj) and not name.startswith("__"):
-                setattr(cls, name, async_time(obj))
 
     def __init__(self, app: "FastAPI"):
         super().__init__(app)

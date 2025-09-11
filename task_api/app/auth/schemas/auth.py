@@ -5,7 +5,7 @@ from app.base.base_pydantic import Base
 
 
 class AuthoSchema(BaseModel):
-    username: EmailStr
+    username: str
     password: str = Field(max_length=63, min_length=8)
 
 

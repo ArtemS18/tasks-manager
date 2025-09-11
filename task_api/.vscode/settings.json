@@ -1,5 +1,5 @@
 {
-    "python.defaultInterpreterPath": "C:/Users/Артемий/AppData/Local/pypoetry/Cache/virtualenvs/task-api-4bw539EJ-py3.13/Scripts/python.exe",
+    "python.defaultInterpreterPath": "C:/Users/Артемий/Desktop/code/task_project/task_api/.venv/Scripts/python.exe",
     "python.testing.pytestEnabled": true,
     "python.testing.unittestEnabled": false,
     "python.testing.nosetestsEnabled": false,

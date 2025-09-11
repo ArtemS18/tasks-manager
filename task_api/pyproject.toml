@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "API for projects"
 authors = ["Artemii"]
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = ">=3.13,<4.0"
