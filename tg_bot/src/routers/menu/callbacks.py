@@ -23,7 +23,6 @@ from src.bot.models.callbacks import (
 )
 from src.internal.api.accessor import api
 from src.services.utils import to_state_form
-from src.internal.api.models.filters import BaseFilters, ProjectFilters, TaskFilters
 from src.keyboards.menu import inline_menu_kd
 from src.services import const
 
@@ -34,17 +33,19 @@ log = logging.getLogger(__name__)
 
 
 @router.callback_query(TasksMenuCallback.filter())
-async def handel_tasks(callback: CallbackQuery, state: FSMContext):
-    msg = await tasks.get_first_task_page(callback, state)
+async def handel_tasks(callback: CallbackQuery, task_service: tasks.TaskService):
+    msg = await task_service.get_first_task_page()
     await callback.message.edit_text(msg.text, reply_markup=msg.reply_markup)
     await callback.answer("GoD!")
 
 
 @router.callback_query(TaskCallback.filter())
 async def handel_task_details(
-    callback: CallbackQuery, callback_data: TaskCallback, state: FSMContext
+    callback: CallbackQuery,
+    callback_data: TaskCallback,
+    task_service: tasks.TaskService,
 ):
-    msg = await tasks.get_task_details(callback_data.id, state)
+    msg = await task_service.get_task_details(callback_data.id)
     await callback.message.edit_text(
         msg.text, reply_markup=msg.reply_markup, parse_mode=ParseMode.HTML
     )

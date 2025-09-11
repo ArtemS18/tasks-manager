@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Chat</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+
+        .chat {
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+            max-width: 400px;
+            min-width: 100px;
+            margin: 0 auto;
+            box-shadow: 4px 4px 5px rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            border: 1.5px solid rgba(0, 0, 0, 0.7);
+
+        }
+
+        .chat h1 {
+            text-align: center;
+        }
+
+        ul#messages {
+            flex: 1;
+            overflow-y: auto;
+            margin: 0;
+            padding: 10px;
+            list-style: none;
+        }
+
+        ul#messages li {
+            margin: 5px;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            padding: 5px;
+            overflow-wrap: anywhere;
+        }
+
+        form {
+            display: flex;
+            justify-content: flex-start;
+            bottom: 0;
+            background: #fff;
+            padding: 10px;
+        }
+
+        .items {
+            display: inline-block;
+            box-shadow: 4px 4px 5px rgba(0, 0, 0, 0.2);
+            border: 2px solid rgba(0, 0, 0, 0.7);
+            padding: 6px 12px;
+
+        }
+
+        .inp {
+            display: block;
+            width: 100%;
+            border-bottom-left-radius: 4px;
+            border-top-left-radius: 4px;
+
+        }
+
+        input:focus,
+        button:focus {
+            outline: none;
+        }
+
+        .btn {
+            width: auto;
+            display: block;
+            transition: all 0.3s ease;
+            color: #333;
+            background: white;
+            border-top-right-radius: 4px;
+            border-bottom-right-radius: 4px;
+            cursor: pointer;
+
+        }
+
+        .btn:hover {
+            color: #ffffff;
+            background: rgb(44, 180, 243);
+        }
+
+        .btn:active {
+            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="chat">
+        <h1>Websocket Chat</h1>
+        <ul id="messages"></ul>
+        <form action="" onsubmit="sendMessage(event)">
+            <input class="items inp" id="messageInput" type="text" autocomplete="off" />
+            <button class="items btn" type="submit">></button>
+            <script>
+                var ws = new WebSocket("ws://localhost:8080/chat/ws");
+                ws.onmessage = function (event) {
+                    var messages = document.getElementById('messages')
+                    var message = document.createElement('li')
+                    var data = JSON.parse(event.data)
+                    var content = document.createTextNode(data.message)
+                    message.appendChild(document.createTextNode(`${data.user}:`))
+                    message.appendChild(document.createElement("br"))
+                    message.appendChild(document.createTextNode(data.message))
+                    messages.appendChild(message)
+                    messages.scrollTop = messages.scrollHeight;
+                };
+                function sendMessage(event) {
+                    var input = document.getElementById("messageInput")
+                    ws.send(input.value)
+                    input.value = ''
+                    event.preventDefault()
+                }
+            </script>
+        </form>
+    </div>
+</body>
+
+</html>

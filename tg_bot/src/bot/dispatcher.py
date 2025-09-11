@@ -3,6 +3,7 @@ from aiogram import Dispatcher
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.fsm.storage.base import DefaultKeyBuilder
 
+from src.bot.middlewary.di import DIMiddleware
 from src.internal.redis.accessor import redis, redis_api
 from src.routers.auth import router as auth_router
 from src.routers.menu import router as menu_router
@@ -31,6 +32,7 @@ def setup_dispatcher() -> Dispatcher:
     )
     dp = Dispatcher(storage=storage)
 
+    dp.update.outer_middleware(DIMiddleware())
     dp.include_routers(auth_router, menu_router)
 
     dp.startup.register(on_startup)
