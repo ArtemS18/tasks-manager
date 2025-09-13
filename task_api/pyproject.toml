@@ -71,6 +71,7 @@ typing-extensions = "4.14.0"
 uvicorn = "0.34.3"
 yarl = "1.20.1"
 zipp = "3.23.0"
+motor = "^3.7.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "8.4.1"

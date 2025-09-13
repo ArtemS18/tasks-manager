@@ -102,15 +102,19 @@
             <input class="items inp" id="messageInput" type="text" autocomplete="off" />
             <button class="items btn" type="submit">></button>
             <script>
-                var ws = new WebSocket("ws://localhost:8080/chat/ws");
+                var ws = new WebSocket("ws://localhost:8081/projects/chat/{{ project_id }}/ws");
+
                 ws.onmessage = function (event) {
                     var messages = document.getElementById('messages')
                     var message = document.createElement('li')
-                    var data = JSON.parse(event.data)
-                    var content = document.createTextNode(data.message)
-                    message.appendChild(document.createTextNode(`${data.user}:`))
+                    var message_data= JSON.parse(JSON.parse(event.data))
+                    console.log(message_data)
+                    var content = document.createTextNode(message_data.text)
+                    message.appendChild(document.createTextNode(message_data.author.name))
                     message.appendChild(document.createElement("br"))
-                    message.appendChild(document.createTextNode(data.message))
+                    message.appendChild(content)
+                    message.appendChild(document.createElement("br"))
+                    message.appendChild(document.createTextNode(message_data.created_at))
                     messages.appendChild(message)
                     messages.scrollTop = messages.scrollHeight;
                 };

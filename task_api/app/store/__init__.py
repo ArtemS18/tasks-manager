@@ -46,8 +46,10 @@ class Store:
         from app.store.email.accessor import SMTPAccessor
         from app.store.redis.accessor import RedisAccessor
         from app.store.broker.accessor import BrokerAccessor
+        from app.store.mongo.accessor import MongoAccessor
 
         self.repo = Repository(app)
+        self.mongo = MongoAccessor(app)
         self.redis = create_obj_mock(RedisAccessor(app))
         self.smtp = create_obj_mock(SMTPAccessor(app))
         self.broker = create_obj_mock(BrokerAccessor(app))
