@@ -96,6 +96,21 @@ services:
       REDIS_PASSWORD: admin
     command: ["redis-server", "--requirepass", "admin"]
 
+  mongo:
+    image: mongo:5.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin 
+      MONGO_INITDB_ROOT_PASSWORD: admin1234 
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand('ping').ok"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   prometheus:
     image: prom/prometheus:latest
     ports:
@@ -118,3 +133,4 @@ volumes:
   my_postgres_data:
   grafana-storage:
   prometheusdata:
+  mongodb_data:

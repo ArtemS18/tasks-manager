@@ -20,10 +20,10 @@ logger = logging.getLogger(__name__)
 
 
 class LoginService:
-    def __init__(self, config, repository, jwt):
-        self.config: BaseConfig = config
-        self.repository: UserRepository = repository
-        self.jwt: JwtService = jwt
+    def __init__(self, config: BaseConfig, repository: UserRepository, jwt: JwtService):
+        self.config = config
+        self.repository = repository
+        self.jwt = jwt
 
         for name, obj in vars(self).items():
             if callable(obj) and not name.startswith("__"):

@@ -2,6 +2,7 @@ import logging
 import typing
 
 from app.base.accessor import BaseAccessor
+from app.lib.test_utils import create_obj_mock
 
 if typing.TYPE_CHECKING:
     from app.lib.fastapi import FastAPI
@@ -45,11 +46,13 @@ class Store:
         from app.store.email.accessor import SMTPAccessor
         from app.store.redis.accessor import RedisAccessor
         from app.store.broker.accessor import BrokerAccessor
+        from app.store.mongo.accessor import MongoAccessor
 
         self.repo = Repository(app)
-        self.redis = RedisAccessor(app)
-        self.smtp = SMTPAccessor(app)
-        self.broker = BrokerAccessor(app)
+        self.mongo = MongoAccessor(app)
+        self.redis = create_obj_mock(RedisAccessor(app))
+        self.smtp = create_obj_mock(SMTPAccessor(app))
+        self.broker = create_obj_mock(BrokerAccessor(app))
 
     async def connect_all(self):
         for name, attr in vars(self).items():

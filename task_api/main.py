@@ -10,6 +10,7 @@ def main():
         port=config.web.port,
         reload=config.web.reload,
         workers=config.web.workers,
+        factory=True
     )
 
 

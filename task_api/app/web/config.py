@@ -62,6 +62,17 @@ class RedisConfig(BaseModel):
     username: str
     password: str
 
+class MongoConfig(BaseModel):
+    db: str = 'task_api'
+    host: str = 'localhost'
+    port: int
+    password: str
+    username: str
+
+    @property
+    def url(self):
+        return f"mongodb://{self.username}:{self.password}@{self.host}:{self.port}"
+
 
 class BaseConfig(BaseSettings):
     model_config = SettingsConfigDict(
@@ -79,6 +90,7 @@ class BaseConfig(BaseSettings):
     rabbit: RabbitConfig
     redis: RedisConfig
     internal: InternalConfig
+    mongo: MongoConfig
 
 
 config: BaseConfig | None = None

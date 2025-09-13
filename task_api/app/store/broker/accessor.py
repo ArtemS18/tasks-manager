@@ -2,7 +2,7 @@ import typing
 from app.base.accessor import BaseAccessor
 from taskiq_aio_pika import AioPikaBroker
 from app.broker.tasks import setup_tasks
-from app.lib.utils import import_obj
+# from app.lib.utils import import_obj
 
 if typing.TYPE_CHECKING:
     from app.lib.fastapi import FastAPI
@@ -21,7 +21,7 @@ class BrokerAccessor(BaseAccessor):
         super().__init__(app)
         self.broker: AioPikaBroker | None = None
         if self.app.config.env_type == "worker":
-            self.broker = import_obj(self.BROKER_PATH)
+            # self.broker = import_obj(self.BROKER_PATH)
             log.info(f"Download broker object from {self.BROKER_PATH}")
 
     async def connect(self):
