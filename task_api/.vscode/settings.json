@@ -1,5 +1,5 @@
 {
-    "python.defaultInterpreterPath": "C:/Users/Артемий/Desktop/code/task_project/task_api/.venv/Scripts/python.exe",
+    "python.defaultInterpreterPath": "D:/Downloads/atom/task_project/task_api/.venv/Scripts/python.exe",
     "python.testing.pytestEnabled": true,
     "python.testing.unittestEnabled": false,
     "python.testing.nosetestsEnabled": false,

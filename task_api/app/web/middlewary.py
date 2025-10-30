@@ -19,7 +19,15 @@ async def time_middlewary(request: "Request", call_next):
     logger.info(
         "All execution time %s : %.2f ms", request.url.path, time_executing * 1000
     )
+
     return response
+
+
+APP_LABEL = {"app_name": "fastapi"}
+
+
+def add_static_labels(labels: dict) -> dict:
+    return {**labels, **APP_LABEL}
 
 
 def setup_middlewary(app: "FastAPI"):

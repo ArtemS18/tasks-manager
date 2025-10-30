@@ -2,9 +2,11 @@ services:
   task_api:
     build: task_api/
     ports:
-    - "8080:8081"
+    - "8080:8080"
     environment:
       - ENV_TYPE=dev
+      - APP__WEB__PORT=8080
+      - LOKI_URL=http://loki:3100/loki/api/v1/push
     volumes:
       - ./task_api:/app
     command: >
@@ -77,6 +79,7 @@ services:
     ports:
       - "15672:15672"  
       - "5672:5672"
+      - "15692:15692"    # Prometheus /metrics
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
@@ -87,6 +90,13 @@ services:
       retries: 3
       start_period: 10s
       timeout: 5s
+          
+    command: >
+      bash -lc "
+        rabbitmq-plugins enable --offline rabbitmq_prometheus &&
+        rabbitmq-server
+      "
+      
   redis:
     image: redis:7
     container_name: redis
@@ -129,8 +139,24 @@ services:
       - ./grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
       - grafana-storage:/var/lib/grafana
 
+  loki:
+    image: grafana/loki:3.0.0
+    command: ["-config.file=/etc/loki/config.yml"]
+    ports:
+      - "3100:3100" 
+    volumes:
+      - ./loki/loki-config.yml:/etc/loki/config.yml
+      - loki-data:/loki
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3100/ready"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
 volumes:
   my_postgres_data:
   grafana-storage:
   prometheusdata:
   mongodb_data:
+  loki-data:
