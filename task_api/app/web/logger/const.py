@@ -1,3 +1,6 @@
+from typing import TypedDict
+
+
 LONG_LOGGER_FORMAT = "[%(asctime)s.%(msecs)03d] [%(processName)s] %(levelname)s %(module)10s:%(funcName)s:%(lineno)-3d %(message)s"
 
 BASE_LOGGER_FORMAT = "[%(asctime)s.%(msecs)03d] %(levelname)s %(module)10s:%(funcName)s:%(lineno)-3d %(message)s"
@@ -15,3 +18,24 @@ LOGGERS_TYPE_FORMAT = {
     "test": SHORT_LOGGER_FORMAT,
 }
 LOGGER_LEVELS = {"test": "DEBUG", "local": "INFO", "dev": "INFO", "worker": "INFO"}
+
+
+class LogEnvConfig(TypedDict):
+    logLevel: str
+    formatter: str
+    dateformat: str
+
+
+class LogEnvFormatters:
+    worker = LogEnvConfig(
+        logLevel="INFO", formatter=WORKER_LOGGER_FORMAT, dateformat=DATEFORMAT
+    )
+    dev = LogEnvConfig(
+        logLevel="INFO", formatter=LONG_LOGGER_FORMAT, dateformat=DATEFORMAT
+    )
+    local = LogEnvConfig(
+        logLevel="INFO", formatter=BASE_LOGGER_FORMAT, dateformat=DATEFORMAT
+    )
+    test = LogEnvConfig(
+        logLevel="DEBUG", formatter=SHORT_LOGGER_FORMAT, dateformat=DATEFORMAT
+    )
